@@ -45,3 +45,5 @@ app.*.map.json
 /blockchain/build/
 /blockchain/node_modules/
 /blockchain/.env
+
+/nodejs/node_modules/
