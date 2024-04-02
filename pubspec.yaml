@@ -38,6 +38,7 @@ dependencies:
   web3modal_flutter: ^3.1.1-beta02
   web3dart: ^2.7.3
   http: ^1.2.1
+  get: ^4.6.6
   
 
 dev_dependencies:
