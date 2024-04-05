@@ -41,6 +41,7 @@ dependencies:
   get: ^4.6.6
   google_fonts: ^6.2.1
   animated_text_kit: ^4.2.2
+  firebase_core: ^2.28.0
   
 
 dev_dependencies:

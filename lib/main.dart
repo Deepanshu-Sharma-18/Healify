@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:healify/screens/Login/Login.dart';
-import 'package:healify/screens/Login/LoginController.dart';
+import 'package:healify/ui/screens/auth/signup.dart';
+import 'package:healify/ui/screens/metamask/Login.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:web3modal_flutter/constants/string_constants.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -24,10 +25,10 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: const ColorScheme.light(),
         useMaterial3: true,
       ),
-      home: LoginMetamask(),
+      home: SignUp(),
     );
   }
 }
