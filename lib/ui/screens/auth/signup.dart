@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
+import 'package:healify/ui/screens/auth/signin.dart';
 import 'package:healify/utils/colors.dart';
 
 class SignUp extends StatefulWidget {
@@ -126,7 +128,9 @@ class _SignUpState extends State<SignUp> {
                             const EdgeInsets.symmetric(horizontal: 0),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.to(() => SignIn());
+                        },
                         child: MyText(
                           text: "Sign In",
                           fontcolor: ColorTheme.metamask,
