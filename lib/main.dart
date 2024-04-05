@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/screens/auth/signup.dart';
+import 'package:healify/ui/screens/home/home.dart';
 import 'package:healify/ui/screens/metamask/Login.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:web3modal_flutter/constants/string_constants.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(),
         useMaterial3: true,
       ),
-      home: SignUp(),
+      home: HomeScreen(),
     );
   }
 }

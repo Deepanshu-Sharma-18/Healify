@@ -129,7 +129,7 @@ class _SignUpState extends State<SignUp> {
                           ),
                         ),
                         onPressed: () {
-                          Get.to(() => SignIn());
+                          Get.off(() => SignIn());
                         },
                         child: MyText(
                           text: "Sign In",
