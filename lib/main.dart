@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(),
         useMaterial3: true,
       ),
-      home: HomeScreen(),
+      home: SignUp(),
     );
   }
 }

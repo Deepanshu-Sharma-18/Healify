@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/screens/auth/signin.dart';
+import 'package:healify/ui/screens/profile/CreateProfile.dart';
 import 'package:healify/utils/colors.dart';
 
 class SignUp extends StatefulWidget {
@@ -144,7 +145,9 @@ class _SignUpState extends State<SignUp> {
                     height: 20,
                   ),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.off(() => CreateProfile());
+                    },
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.all<Color>(ColorTheme.green),
