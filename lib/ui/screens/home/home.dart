@@ -5,6 +5,7 @@ import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/record/record.dart';
+import 'package:healify/ui/screens/timeline/timeline.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:web3modal_flutter/widgets/w3m_account_button.dart';
 
@@ -189,42 +190,47 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(
                 height: 30,
               ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image(
-                      image: AssetImage("assets/images/timeline.png"),
-                      width: 35,
-                      height: 35,
-                      fit: BoxFit.cover,
-                    ),
-                    MyText(
-                      fontsize: 17,
-                      fontcolor: Colors.black,
-                      fontweight: FontWeight.w500,
-                      text: "View your health timeline",
-                    ),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(50),
+              InkWell(
+                onTap: () {
+                  Get.to(() => Timeline());
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Image(
+                        image: AssetImage("assets/images/timeline.png"),
+                        width: 35,
+                        height: 35,
+                        fit: BoxFit.cover,
                       ),
-                      child: const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.green,
-                        size: 20,
+                      MyText(
+                        fontsize: 17,
+                        fontcolor: Colors.black,
+                        fontweight: FontWeight.w500,
+                        text: "View your health timeline",
                       ),
-                    ),
-                  ],
+                      Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
