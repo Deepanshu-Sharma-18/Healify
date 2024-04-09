@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
@@ -21,10 +22,22 @@ class LoginMetamask extends StatefulWidget {
 
 class _LoginMetaskState extends State<LoginMetamask> {
   var loginController = Get.find<LoginController>();
+
   Timer? timer;
 
   @override
+  void initState() {
+    super.initState();
+    loginController.initialize();
+
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (loginController.w3mService != null) setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
+    timer?.cancel();
     super.dispose();
   }
 
@@ -70,97 +83,87 @@ class _LoginMetaskState extends State<LoginMetamask> {
   //   print(data.toString());
   // }
 
-  void isConnected() {
-    if (loginController.w3mService!.isConnected) {
-      Get.off(() => HomeScreen());
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: loginController.w3mService == null
-            ? Center(child: CircularProgressIndicator())
-            : Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 30,
+        body: SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        width: double.infinity,
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 30,
+            ),
+            TopBar(),
+            const SizedBox(
+              height: 50,
+            ),
+            Container(
+              width: double.infinity,
+              height: 400,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  image: DecorationImage(
+                    image: NetworkImage(
+                        "https://thegivingblock.com/wp-content/uploads/2023/02/MetaMask-Partnership-The-Giving-Block.png"),
+                  )),
+            ),
+            Container(
+              width: 200,
+              height: 50,
+              child: W3MNetworkSelectButton(
+                service: loginController.w3mService!,
+              ),
+            ),
+            const SizedBox(height: 50),
+            Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 1),
+                borderRadius: BorderRadius.circular(21),
+              ),
+              child: W3MConnectWalletButton(
+                service: loginController.w3mService!,
+                size: BaseButtonSize.regular,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Visibility(
+              visible: loginController.w3mService != null &&
+                  loginController.w3mService!.isConnected == true,
+              child: OutlinedButton(
+                onPressed: () {
+                  Get.off(() => HomeScreen());
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(ColorTheme.green),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    TopBar(),
-                    const SizedBox(
-                      height: 50,
-                    ),
-                    Container(
-                      width: double.infinity,
-                      height: 400,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                                "https://thegivingblock.com/wp-content/uploads/2023/02/MetaMask-Partnership-The-Giving-Block.png"),
-                          )),
-                    ),
-                    Container(
-                      width: 200,
-                      height: 50,
-                      child: W3MNetworkSelectButton(
-                        service: loginController.w3mService!,
-                      ),
-                    ),
-                    const SizedBox(height: 50),
-                    Container(
-                      width: double.infinity,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 1),
-                        borderRadius: BorderRadius.circular(21),
-                      ),
-                      child: W3MConnectWalletButton(
-                        service: loginController.w3mService!,
-                        size: BaseButtonSize.regular,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Visibility(
-                      visible: loginController.w3mService != null &&
-                          loginController.w3mService!.isConnected == true,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Get.off(() => HomeScreen());
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              ColorTheme.green),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          width: double.infinity,
-                          height: 60,
-                          alignment: Alignment.center,
-                          child: MyText(
-                            text: "Proceed",
-                            fontcolor: Colors.black,
-                            fontsize: 17,
-                            fontweight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  width: double.infinity,
+                  height: 60,
+                  alignment: Alignment.center,
+                  child: MyText(
+                    text: "Proceed",
+                    fontcolor: Colors.black,
+                    fontsize: 17,
+                    fontweight: FontWeight.bold,
+                  ),
                 ),
               ),
+            ),
+          ],
+        ),
       ),
-    );
+    ));
   }
 }
