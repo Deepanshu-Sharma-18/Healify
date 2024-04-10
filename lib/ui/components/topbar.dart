@@ -27,7 +27,8 @@ class TopBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(50),
                       image: const DecorationImage(
                         image: NetworkImage(
-                            "https://scontent.fpnq2-2.fna.fbcdn.net/v/t39.30808-6/349917449_202893469309682_1416512756946642348_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=5HgwVaLzfgAAb65zEmY&_nc_ht=scontent.fpnq2-2.fna&oh=00_AfAl5ZrNLvvnqCPgdgNcWV0e8HBtjrnSpERuaJQ7ZBJeYg&oe=6615A69A"),
+                          "https://images.saymedia-content.com/.image/c_limit%2Ccs_srgb%2Cq_auto:eco%2Cw_700/MTk4MDQzMTI5NzY3NTM1ODA2/short-captions-for-profile-pictures.webp",
+                        ),
                       ),
                       color: Colors.grey,
                     ),

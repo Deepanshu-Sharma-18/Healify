@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healify/ui/components/recordcard.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/record/addrecord.dart';
 import 'package:healify/utils/colors.dart';
 
 class RecordScreen extends StatefulWidget {
@@ -15,6 +17,22 @@ class _RecordScreenState extends State<RecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: ColorTheme.green,
+        onPressed: () {
+          Get.to(() => AddRecord());
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: ColorTheme.green,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
+        ),
+      ),
       body: SafeArea(
           child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/record/editrecord.dart';
 import 'package:healify/utils/colors.dart';
 
 class RecordInfo extends StatefulWidget {
@@ -82,17 +84,29 @@ class _RecordInfoState extends State<RecordInfo> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              color: ColorTheme.green,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 20,
+                          InkWell(
+                            onTap: () {
+                              print("Edit Record");
+                              Get.to(() => EditRecord(
+                                  date: DateTime.now(),
+                                  title: "",
+                                  symptoms: "",
+                                  diagnosis: "",
+                                  treatment: "",
+                                  records: []));
+                            },
+                            child: Container(
+                              height: 45,
+                              width: 45,
+                              decoration: BoxDecoration(
+                                color: ColorTheme.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                           const SizedBox(
