@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:healify/repository/prismacontroller.dart';
 import 'package:healify/ui/screens/auth/signup.dart';
 import 'package:healify/ui/screens/home/home.dart';
 import 'package:healify/ui/screens/metamask/Login.dart';
@@ -23,7 +21,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.put(LoginController());
-    Get.put(PrismaController());
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

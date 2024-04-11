@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:healify/generated_dart_client/client.dart';
-import 'package:healify/repository/prismacontroller.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
-import 'package:healify/ui/screens/metamask/Login.dart';
 import 'package:healify/utils/colors.dart';
+import 'package:orm/orm.dart';
 
 class CreateProfile extends StatefulWidget {
   const CreateProfile({super.key});
@@ -16,13 +14,9 @@ class CreateProfile extends StatefulWidget {
 }
 
 class _CreateProfileState extends State<CreateProfile> {
-  final prismaget = Get.find<PrismaController>();
-  late PrismaClient prisma;
-
   @override
   void initState() {
     super.initState();
-    prisma = prismaget.prisma;
   }
 
   var height = TextEditingController();
@@ -101,8 +95,9 @@ class _CreateProfileState extends State<CreateProfile> {
                   height: 50,
                 ),
                 OutlinedButton(
-                  onPressed: () {
-                    Get.off(() => LoginMetamask());
+                  onPressed: () async {
+                    await saveProfile();
+                    // Get.off(() => LoginMetamask());
                   },
                   style: ButtonStyle(
                     backgroundColor:
