@@ -1,0 +1,37 @@
+datasource db {
+  // could be postgresql or mysql
+  provider = "mongodb"
+  url      = "mongodb+srv://deepanshugcloud:deepanshugcloud@cluster0.6eu2ec1.mongodb.net/healify"
+}
+
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+ 
+
+model User {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    name        String
+    username    String   @unique
+    height      String?
+    weight      String?
+    age         String?
+    bloodgroup  String?
+    gender      String?
+    records     Record[]
+    address     String
+    image       String
+}
+
+
+model Record {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    title       String
+    date        String
+    symptoms    String[]
+    diagnosis   String[]
+    treatment   String[]
+    reports     String[]
+    user        User     @relation(fields: [userId], references: [id])
+    userId      String    @unique @db.ObjectId
+}
