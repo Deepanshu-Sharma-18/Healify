@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.put(LoginController());
-    Get.put(PrismaContrller());
+    Get.put(PrismaController());
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

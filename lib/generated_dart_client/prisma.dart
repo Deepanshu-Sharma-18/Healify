@@ -328,6 +328,7 @@ class RecordWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.user,
   });
@@ -352,6 +353,8 @@ class RecordWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final _i2.StringNullableListFilter? treatment;
 
+  final _i2.StringNullableListFilter? reports;
+
   final _i1.PrismaUnion<_i2.StringFilter, String>? userId;
 
   final _i1.PrismaUnion<_i2.UserRelationFilter, _i2.UserWhereInput>? user;
@@ -367,6 +370,7 @@ class RecordWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         'user': user,
       };
@@ -644,6 +648,7 @@ class RecordOrderByWithRelationInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.user,
   });
@@ -660,6 +665,8 @@ class RecordOrderByWithRelationInput
 
   final _i2.SortOrder? treatment;
 
+  final _i2.SortOrder? reports;
+
   final _i2.SortOrder? userId;
 
   final _i2.UserOrderByWithRelationInput? user;
@@ -672,6 +679,7 @@ class RecordOrderByWithRelationInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         'user': user,
       };
@@ -690,6 +698,7 @@ class RecordWhereUniqueInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.user,
   });
 
@@ -715,6 +724,8 @@ class RecordWhereUniqueInput
 
   final _i2.StringNullableListFilter? treatment;
 
+  final _i2.StringNullableListFilter? reports;
+
   final _i1.PrismaUnion<_i2.UserRelationFilter, _i2.UserWhereInput>? user;
 
   @override
@@ -729,6 +740,7 @@ class RecordWhereUniqueInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'user': user,
       };
 }
@@ -740,6 +752,7 @@ enum RecordScalar<T> implements _i1.PrismaEnum, _i1.Reference<T> {
   symptoms<String>('symptoms', 'Record'),
   diagnosis<String>('diagnosis', 'Record'),
   treatment<String>('treatment', 'Record'),
+  reports<String>('reports', 'Record'),
   userId<String>('userId', 'Record');
 
   const RecordScalar(
@@ -840,6 +853,7 @@ class RecordSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.user,
   });
@@ -856,6 +870,8 @@ class RecordSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final bool? treatment;
 
+  final bool? reports;
+
   final bool? userId;
 
   final _i1.PrismaUnion<bool, _i2.RecordUserArgs>? user;
@@ -868,6 +884,7 @@ class RecordSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         'user': user,
       };
@@ -984,6 +1001,16 @@ class RecordCreatetreatmentInput
   Map<String, dynamic> toJson() => {'set': set};
 }
 
+class RecordCreatereportsInput
+    implements _i1.JsonConvertible<Map<String, dynamic>> {
+  const RecordCreatereportsInput({required this.set});
+
+  final Iterable<String> set;
+
+  @override
+  Map<String, dynamic> toJson() => {'set': set};
+}
+
 class RecordCreateWithoutUserInput
     implements _i1.JsonConvertible<Map<String, dynamic>> {
   const RecordCreateWithoutUserInput({
@@ -993,6 +1020,7 @@ class RecordCreateWithoutUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final String? id;
@@ -1010,6 +1038,9 @@ class RecordCreateWithoutUserInput
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1018,6 +1049,7 @@ class RecordCreateWithoutUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1030,6 +1062,7 @@ class RecordUncheckedCreateWithoutUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final String? id;
@@ -1047,6 +1080,9 @@ class RecordUncheckedCreateWithoutUserInput
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1055,6 +1091,7 @@ class RecordUncheckedCreateWithoutUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1086,6 +1123,7 @@ class RecordCreateManyUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final String? id;
@@ -1103,6 +1141,9 @@ class RecordCreateManyUserInput
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1111,6 +1152,7 @@ class RecordCreateManyUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1440,6 +1482,24 @@ class RecordUpdatetreatmentInput
       };
 }
 
+class RecordUpdatereportsInput
+    implements _i1.JsonConvertible<Map<String, dynamic>> {
+  const RecordUpdatereportsInput({
+    this.set,
+    this.push,
+  });
+
+  final Iterable<String>? set;
+
+  final _i1.PrismaUnion<String, Iterable<String>>? push;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'set': set,
+        'push': push,
+      };
+}
+
 class RecordUpdateWithoutUserInput
     implements _i1.JsonConvertible<Map<String, dynamic>> {
   const RecordUpdateWithoutUserInput({
@@ -1448,6 +1508,7 @@ class RecordUpdateWithoutUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? title;
@@ -1463,6 +1524,9 @@ class RecordUpdateWithoutUserInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'title': title,
@@ -1470,6 +1534,7 @@ class RecordUpdateWithoutUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1481,6 +1546,7 @@ class RecordUncheckedUpdateWithoutUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? title;
@@ -1496,6 +1562,9 @@ class RecordUncheckedUpdateWithoutUserInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'title': title,
@@ -1503,6 +1572,7 @@ class RecordUncheckedUpdateWithoutUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1561,6 +1631,7 @@ class RecordScalarWhereInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
   });
 
@@ -1584,6 +1655,8 @@ class RecordScalarWhereInput
 
   final _i2.StringNullableListFilter? treatment;
 
+  final _i2.StringNullableListFilter? reports;
+
   final _i1.PrismaUnion<_i2.StringFilter, String>? userId;
 
   @override
@@ -1597,6 +1670,7 @@ class RecordScalarWhereInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -1609,6 +1683,7 @@ class RecordUpdateManyMutationInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? title;
@@ -1624,6 +1699,9 @@ class RecordUpdateManyMutationInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'title': title,
@@ -1631,6 +1709,7 @@ class RecordUpdateManyMutationInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -1642,6 +1721,7 @@ class RecordUncheckedUpdateManyWithoutUserInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? title;
@@ -1657,6 +1737,9 @@ class RecordUncheckedUpdateManyWithoutUserInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   @override
   Map<String, dynamic> toJson() => {
         'title': title,
@@ -1664,6 +1747,7 @@ class RecordUncheckedUpdateManyWithoutUserInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
       };
 }
 
@@ -3492,6 +3576,7 @@ class RecordCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     required this.user,
   });
 
@@ -3510,6 +3595,9 @@ class RecordCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   final _i2.UserCreateNestedOneWithoutRecordsInput user;
 
   @override
@@ -3520,6 +3608,7 @@ class RecordCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'user': user,
       };
 }
@@ -3533,6 +3622,7 @@ class RecordUncheckedCreateInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     required this.userId,
   });
 
@@ -3551,6 +3641,9 @@ class RecordUncheckedCreateInput
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   final String userId;
 
   @override
@@ -3561,6 +3654,7 @@ class RecordUncheckedCreateInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -3574,6 +3668,7 @@ class RecordCreateManyInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     required this.userId,
   });
 
@@ -3592,6 +3687,9 @@ class RecordCreateManyInput
   final _i1.PrismaUnion<_i2.RecordCreatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordCreatereportsInput, Iterable<String>>?
+      reports;
+
   final String userId;
 
   @override
@@ -3602,6 +3700,7 @@ class RecordCreateManyInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -3812,6 +3911,7 @@ class RecordUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.user,
   });
 
@@ -3828,6 +3928,9 @@ class RecordUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   final _i2.UserUpdateOneRequiredWithoutRecordsNestedInput? user;
 
   @override
@@ -3837,6 +3940,7 @@ class RecordUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'user': user,
       };
 }
@@ -3849,6 +3953,7 @@ class RecordUncheckedUpdateInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
   });
 
@@ -3865,6 +3970,9 @@ class RecordUncheckedUpdateInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? userId;
 
   @override
@@ -3874,6 +3982,7 @@ class RecordUncheckedUpdateInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -3886,6 +3995,7 @@ class RecordUncheckedUpdateManyInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
   });
 
@@ -3902,6 +4012,9 @@ class RecordUncheckedUpdateManyInput
   final _i1.PrismaUnion<_i2.RecordUpdatetreatmentInput, Iterable<String>>?
       treatment;
 
+  final _i1.PrismaUnion<_i2.RecordUpdatereportsInput, Iterable<String>>?
+      reports;
+
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? userId;
 
   @override
@@ -3911,6 +4024,7 @@ class RecordUncheckedUpdateManyInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -3923,6 +4037,7 @@ class RecordCountAggregateOutputType {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.$all,
   });
@@ -3935,6 +4050,7 @@ class RecordCountAggregateOutputType {
         symptoms: json['symptoms'],
         diagnosis: json['diagnosis'],
         treatment: json['treatment'],
+        reports: json['reports'],
         userId: json['userId'],
         $all: json['_all'],
       );
@@ -3951,6 +4067,8 @@ class RecordCountAggregateOutputType {
 
   final int? treatment;
 
+  final int? reports;
+
   final int? userId;
 
   final int? $all;
@@ -3962,6 +4080,7 @@ class RecordCountAggregateOutputType {
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         '_all': $all,
       };
@@ -4039,6 +4158,7 @@ class RecordGroupByOutputType {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.$count,
     this.$min,
@@ -4057,6 +4177,9 @@ class RecordGroupByOutputType {
             : null,
         treatment: json['treatment'] is Iterable
             ? (json['treatment'] as Iterable).whereType<String>()
+            : null,
+        reports: json['reports'] is Iterable
+            ? (json['reports'] as Iterable).whereType<String>()
             : null,
         userId: json['userId'],
         $count: json['_count'] is Map
@@ -4082,6 +4205,8 @@ class RecordGroupByOutputType {
 
   final Iterable<String>? treatment;
 
+  final Iterable<String>? reports;
+
   final String? userId;
 
   final _i2.RecordCountAggregateOutputType? $count;
@@ -4097,6 +4222,7 @@ class RecordGroupByOutputType {
         'symptoms': symptoms?.map((e) => e),
         'diagnosis': diagnosis?.map((e) => e),
         'treatment': treatment?.map((e) => e),
+        'reports': reports?.map((e) => e),
         'userId': userId,
         '_count': $count?.toJson(),
         '_min': $min?.toJson(),
@@ -4113,6 +4239,7 @@ class RecordCountOrderByAggregateInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
   });
 
@@ -4128,6 +4255,8 @@ class RecordCountOrderByAggregateInput
 
   final _i2.SortOrder? treatment;
 
+  final _i2.SortOrder? reports;
+
   final _i2.SortOrder? userId;
 
   @override
@@ -4138,6 +4267,7 @@ class RecordCountOrderByAggregateInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -4203,6 +4333,7 @@ class RecordOrderByWithAggregationInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.$count,
     this.$max,
@@ -4221,6 +4352,8 @@ class RecordOrderByWithAggregationInput
 
   final _i2.SortOrder? treatment;
 
+  final _i2.SortOrder? reports;
+
   final _i2.SortOrder? userId;
 
   final _i2.RecordCountOrderByAggregateInput? $count;
@@ -4237,6 +4370,7 @@ class RecordOrderByWithAggregationInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         '_count': $count,
         '_max': $max,
@@ -4256,6 +4390,7 @@ class RecordScalarWhereWithAggregatesInput
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
   });
 
@@ -4279,6 +4414,8 @@ class RecordScalarWhereWithAggregatesInput
 
   final _i2.StringNullableListFilter? treatment;
 
+  final _i2.StringNullableListFilter? reports;
+
   final _i1.PrismaUnion<_i2.StringWithAggregatesFilter, String>? userId;
 
   @override
@@ -4292,6 +4429,7 @@ class RecordScalarWhereWithAggregatesInput
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
       };
 }
@@ -4305,6 +4443,7 @@ class RecordCountAggregateOutputTypeSelect
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.$all,
   });
@@ -4321,6 +4460,8 @@ class RecordCountAggregateOutputTypeSelect
 
   final bool? treatment;
 
+  final bool? reports;
+
   final bool? userId;
 
   final bool? $all;
@@ -4333,6 +4474,7 @@ class RecordCountAggregateOutputTypeSelect
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         '_all': $all,
       };
@@ -4429,6 +4571,7 @@ class RecordGroupByOutputTypeSelect
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.$count,
     this.$min,
@@ -4447,6 +4590,8 @@ class RecordGroupByOutputTypeSelect
 
   final bool? treatment;
 
+  final bool? reports;
+
   final bool? userId;
 
   final _i1.PrismaUnion<bool, _i2.RecordGroupByOutputTypeCountArgs>? $count;
@@ -4463,6 +4608,7 @@ class RecordGroupByOutputTypeSelect
         'symptoms': symptoms,
         'diagnosis': diagnosis,
         'treatment': treatment,
+        'reports': reports,
         'userId': userId,
         '_count': $count,
         '_min': $min,

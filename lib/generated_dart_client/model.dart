@@ -10,6 +10,7 @@ class Record {
     this.symptoms,
     this.diagnosis,
     this.treatment,
+    this.reports,
     this.userId,
     this.user,
   });
@@ -27,6 +28,9 @@ class Record {
         treatment: json['treatment'] is Iterable
             ? (json['treatment'] as Iterable).whereType<String>()
             : null,
+        reports: json['reports'] is Iterable
+            ? (json['reports'] as Iterable).whereType<String>()
+            : null,
         userId: json['userId'],
         user: json['user'] is Map ? _i1.User.fromJson(json['user']) : null,
       );
@@ -43,6 +47,8 @@ class Record {
 
   final Iterable<String>? treatment;
 
+  final Iterable<String>? reports;
+
   final String? userId;
 
   final _i1.User? user;
@@ -54,6 +60,7 @@ class Record {
         'symptoms': symptoms?.map((e) => e),
         'diagnosis': diagnosis?.map((e) => e),
         'treatment': treatment?.map((e) => e),
+        'reports': reports?.map((e) => e),
         'userId': userId,
         'user': user?.toJson(),
       };

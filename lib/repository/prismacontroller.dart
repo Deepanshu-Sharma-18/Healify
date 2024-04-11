@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:healify/generated_dart_client/client.dart';
 
-class PrismaContrller extends GetxController {
+class PrismaController extends GetxController {
   final prisma = PrismaClient();
 
   @override

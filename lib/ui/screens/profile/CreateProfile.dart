@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:healify/generated_dart_client/client.dart';
+import 'package:healify/repository/prismacontroller.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/screens/metamask/Login.dart';
@@ -14,11 +16,22 @@ class CreateProfile extends StatefulWidget {
 }
 
 class _CreateProfileState extends State<CreateProfile> {
+  final prismaget = Get.find<PrismaController>();
+  late PrismaClient prisma;
+
+  @override
+  void initState() {
+    super.initState();
+    prisma = prismaget.prisma;
+  }
+
   var height = TextEditingController();
   var age = TextEditingController();
   var weight = TextEditingController();
   var bloodGroup = TextEditingController();
   var gender = TextEditingController();
+
+  Future<void> saveProfile() async {}
 
   @override
   Widget build(BuildContext context) {
