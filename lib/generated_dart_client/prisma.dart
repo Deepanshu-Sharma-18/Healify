@@ -408,6 +408,7 @@ class UserWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
   });
 
@@ -440,6 +441,8 @@ class UserWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final _i1.PrismaUnion<_i2.StringFilter, String>? address;
 
+  final _i1.PrismaUnion<_i2.StringFilter, String>? image;
+
   final _i2.RecordListRelationFilter? records;
 
   @override
@@ -456,6 +459,7 @@ class UserWhereInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -475,6 +479,7 @@ class UserWhereUniqueInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
   });
 
@@ -507,6 +512,8 @@ class UserWhereUniqueInput
 
   final _i1.PrismaUnion<_i2.StringFilter, String>? address;
 
+  final _i1.PrismaUnion<_i2.StringFilter, String>? image;
+
   final _i2.RecordListRelationFilter? records;
 
   @override
@@ -523,6 +530,7 @@ class UserWhereUniqueInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -585,6 +593,7 @@ class UserOrderByWithRelationInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
   });
 
@@ -606,6 +615,8 @@ class UserOrderByWithRelationInput
 
   final _i2.SortOrder? address;
 
+  final _i2.SortOrder? image;
+
   final _i2.RecordOrderByRelationAggregateInput? records;
 
   @override
@@ -619,6 +630,7 @@ class UserOrderByWithRelationInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -872,6 +884,7 @@ class UserSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
     this.$count,
   });
@@ -894,6 +907,8 @@ class UserSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final bool? address;
 
+  final bool? image;
+
   final _i1.PrismaUnion<bool, _i2.UserRecordsArgs>? records;
 
   final _i1.PrismaUnion<bool, _i2.UserCountArgs>? $count;
@@ -909,6 +924,7 @@ class UserSelect implements _i1.JsonConvertible<Map<String, dynamic>> {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
         '_count': $count,
       };
@@ -923,7 +939,8 @@ enum UserScalar<T> implements _i1.PrismaEnum, _i1.Reference<T> {
   age<String>('age', 'User'),
   bloodgroup<String>('bloodgroup', 'User'),
   gender<String>('gender', 'User'),
-  address<String>('address', 'User');
+  address<String>('address', 'User'),
+  image<String>('image', 'User');
 
   const UserScalar(
     this.name,
@@ -1152,6 +1169,7 @@ class UserCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.bloodgroup,
     this.gender,
     required this.address,
+    required this.image,
     this.records,
   });
 
@@ -1173,6 +1191,8 @@ class UserCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final String address;
 
+  final String image;
+
   final _i2.RecordCreateNestedManyWithoutUserInput? records;
 
   @override
@@ -1186,6 +1206,7 @@ class UserCreateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -1235,6 +1256,7 @@ class UserUncheckedCreateInput
     this.bloodgroup,
     this.gender,
     required this.address,
+    required this.image,
     this.records,
   });
 
@@ -1256,6 +1278,8 @@ class UserUncheckedCreateInput
 
   final String address;
 
+  final String image;
+
   final _i2.RecordUncheckedCreateNestedManyWithoutUserInput? records;
 
   @override
@@ -1269,6 +1293,7 @@ class UserUncheckedCreateInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -1295,6 +1320,7 @@ class UserCreateManyInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.bloodgroup,
     this.gender,
     required this.address,
+    required this.image,
   });
 
   final String? id;
@@ -1315,6 +1341,8 @@ class UserCreateManyInput implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final String address;
 
+  final String image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1326,6 +1354,7 @@ class UserCreateManyInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -1735,6 +1764,7 @@ class UserUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
   });
 
@@ -1769,6 +1799,8 @@ class UserUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   final _i2.RecordUpdateManyWithoutUserNestedInput? records;
 
   @override
@@ -1781,6 +1813,7 @@ class UserUpdateInput implements _i1.JsonConvertible<Map<String, dynamic>> {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -1864,6 +1897,7 @@ class UserUncheckedUpdateInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
   });
 
@@ -1898,6 +1932,8 @@ class UserUncheckedUpdateInput
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   final _i2.RecordUncheckedUpdateManyWithoutUserNestedInput? records;
 
   @override
@@ -1910,6 +1946,7 @@ class UserUncheckedUpdateInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records,
       };
 }
@@ -1925,6 +1962,7 @@ class UserUpdateManyMutationInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? name;
@@ -1958,6 +1996,8 @@ class UserUpdateManyMutationInput
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -1968,6 +2008,7 @@ class UserUpdateManyMutationInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -1982,6 +2023,7 @@ class UserUncheckedUpdateManyInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? name;
@@ -2015,6 +2057,8 @@ class UserUncheckedUpdateManyInput
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -2025,6 +2069,7 @@ class UserUncheckedUpdateManyInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2039,6 +2084,7 @@ class UserCountAggregateOutputType {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.$all,
   });
 
@@ -2053,6 +2099,7 @@ class UserCountAggregateOutputType {
         bloodgroup: json['bloodgroup'],
         gender: json['gender'],
         address: json['address'],
+        image: json['image'],
         $all: json['_all'],
       );
 
@@ -2074,6 +2121,8 @@ class UserCountAggregateOutputType {
 
   final int? address;
 
+  final int? image;
+
   final int? $all;
 
   Map<String, dynamic> toJson() => {
@@ -2086,6 +2135,7 @@ class UserCountAggregateOutputType {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         '_all': $all,
       };
 }
@@ -2101,6 +2151,7 @@ class UserMinAggregateOutputType {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   factory UserMinAggregateOutputType.fromJson(Map json) =>
@@ -2114,6 +2165,7 @@ class UserMinAggregateOutputType {
         bloodgroup: json['bloodgroup'],
         gender: json['gender'],
         address: json['address'],
+        image: json['image'],
       );
 
   final String? id;
@@ -2134,6 +2186,8 @@ class UserMinAggregateOutputType {
 
   final String? address;
 
+  final String? image;
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -2144,6 +2198,7 @@ class UserMinAggregateOutputType {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2158,6 +2213,7 @@ class UserMaxAggregateOutputType {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   factory UserMaxAggregateOutputType.fromJson(Map json) =>
@@ -2171,6 +2227,7 @@ class UserMaxAggregateOutputType {
         bloodgroup: json['bloodgroup'],
         gender: json['gender'],
         address: json['address'],
+        image: json['image'],
       );
 
   final String? id;
@@ -2191,6 +2248,8 @@ class UserMaxAggregateOutputType {
 
   final String? address;
 
+  final String? image;
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -2201,6 +2260,7 @@ class UserMaxAggregateOutputType {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2215,6 +2275,7 @@ class UserGroupByOutputType {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.$count,
     this.$min,
     this.$max,
@@ -2230,6 +2291,7 @@ class UserGroupByOutputType {
         bloodgroup: json['bloodgroup'],
         gender: json['gender'],
         address: json['address'],
+        image: json['image'],
         $count: json['_count'] is Map
             ? _i2.UserCountAggregateOutputType.fromJson(json['_count'])
             : null,
@@ -2259,6 +2321,8 @@ class UserGroupByOutputType {
 
   final String? address;
 
+  final String? image;
+
   final _i2.UserCountAggregateOutputType? $count;
 
   final _i2.UserMinAggregateOutputType? $min;
@@ -2275,6 +2339,7 @@ class UserGroupByOutputType {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         '_count': $count?.toJson(),
         '_min': $min?.toJson(),
         '_max': $max?.toJson(),
@@ -2293,6 +2358,7 @@ class UserCountOrderByAggregateInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i2.SortOrder? id;
@@ -2313,6 +2379,8 @@ class UserCountOrderByAggregateInput
 
   final _i2.SortOrder? address;
 
+  final _i2.SortOrder? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -2324,6 +2392,7 @@ class UserCountOrderByAggregateInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2339,6 +2408,7 @@ class UserMaxOrderByAggregateInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i2.SortOrder? id;
@@ -2359,6 +2429,8 @@ class UserMaxOrderByAggregateInput
 
   final _i2.SortOrder? address;
 
+  final _i2.SortOrder? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -2370,6 +2442,7 @@ class UserMaxOrderByAggregateInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2385,6 +2458,7 @@ class UserMinOrderByAggregateInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i2.SortOrder? id;
@@ -2405,6 +2479,8 @@ class UserMinOrderByAggregateInput
 
   final _i2.SortOrder? address;
 
+  final _i2.SortOrder? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -2416,6 +2492,7 @@ class UserMinOrderByAggregateInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2431,6 +2508,7 @@ class UserOrderByWithAggregationInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.$count,
     this.$max,
     this.$min,
@@ -2454,6 +2532,8 @@ class UserOrderByWithAggregationInput
 
   final _i2.SortOrder? address;
 
+  final _i2.SortOrder? image;
+
   final _i2.UserCountOrderByAggregateInput? $count;
 
   final _i2.UserMaxOrderByAggregateInput? $max;
@@ -2471,6 +2551,7 @@ class UserOrderByWithAggregationInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         '_count': $count,
         '_max': $max,
         '_min': $min,
@@ -2878,6 +2959,7 @@ class UserScalarWhereWithAggregatesInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i1.PrismaUnion<_i2.UserScalarWhereWithAggregatesInput,
@@ -2911,6 +2993,8 @@ class UserScalarWhereWithAggregatesInput
 
   final _i1.PrismaUnion<_i2.StringWithAggregatesFilter, String>? address;
 
+  final _i1.PrismaUnion<_i2.StringWithAggregatesFilter, String>? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'AND': AND,
@@ -2925,6 +3009,7 @@ class UserScalarWhereWithAggregatesInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -2940,6 +3025,7 @@ class UserCountAggregateOutputTypeSelect
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.$all,
   });
 
@@ -2961,6 +3047,8 @@ class UserCountAggregateOutputTypeSelect
 
   final bool? address;
 
+  final bool? image;
+
   final bool? $all;
 
   @override
@@ -2974,6 +3062,7 @@ class UserCountAggregateOutputTypeSelect
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         '_all': $all,
       };
 }
@@ -3000,6 +3089,7 @@ class UserMinAggregateOutputTypeSelect
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final bool? id;
@@ -3020,6 +3110,8 @@ class UserMinAggregateOutputTypeSelect
 
   final bool? address;
 
+  final bool? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -3031,6 +3123,7 @@ class UserMinAggregateOutputTypeSelect
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -3056,6 +3149,7 @@ class UserMaxAggregateOutputTypeSelect
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final bool? id;
@@ -3076,6 +3170,8 @@ class UserMaxAggregateOutputTypeSelect
 
   final bool? address;
 
+  final bool? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -3087,6 +3183,7 @@ class UserMaxAggregateOutputTypeSelect
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -3112,6 +3209,7 @@ class UserGroupByOutputTypeSelect
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.$count,
     this.$min,
     this.$max,
@@ -3135,6 +3233,8 @@ class UserGroupByOutputTypeSelect
 
   final bool? address;
 
+  final bool? image;
+
   final _i1.PrismaUnion<bool, _i2.UserGroupByOutputTypeCountArgs>? $count;
 
   final _i1.PrismaUnion<bool, _i2.UserGroupByOutputTypeMinArgs>? $min;
@@ -3152,6 +3252,7 @@ class UserGroupByOutputTypeSelect
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         '_count': $count,
         '_min': $min,
         '_max': $max,
@@ -3253,6 +3354,7 @@ class UserCreateWithoutRecordsInput
     this.bloodgroup,
     this.gender,
     required this.address,
+    required this.image,
   });
 
   final String? id;
@@ -3273,6 +3375,8 @@ class UserCreateWithoutRecordsInput
 
   final String address;
 
+  final String image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -3284,6 +3388,7 @@ class UserCreateWithoutRecordsInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -3299,6 +3404,7 @@ class UserUncheckedCreateWithoutRecordsInput
     this.bloodgroup,
     this.gender,
     required this.address,
+    required this.image,
   });
 
   final String? id;
@@ -3319,6 +3425,8 @@ class UserUncheckedCreateWithoutRecordsInput
 
   final String address;
 
+  final String image;
+
   @override
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -3330,6 +3438,7 @@ class UserUncheckedCreateWithoutRecordsInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -3508,6 +3617,7 @@ class UserUpdateWithoutRecordsInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? name;
@@ -3541,6 +3651,8 @@ class UserUpdateWithoutRecordsInput
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -3551,6 +3663,7 @@ class UserUpdateWithoutRecordsInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 
@@ -3565,6 +3678,7 @@ class UserUncheckedUpdateWithoutRecordsInput
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
   });
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? name;
@@ -3598,6 +3712,8 @@ class UserUncheckedUpdateWithoutRecordsInput
 
   final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? address;
 
+  final _i1.PrismaUnion<String, _i2.StringFieldUpdateOperationsInput>? image;
+
   @override
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -3608,6 +3724,7 @@ class UserUncheckedUpdateWithoutRecordsInput
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
       };
 }
 

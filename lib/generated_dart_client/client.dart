@@ -1045,7 +1045,7 @@ class PrismaClient {
     }
     final engine = _i4.BinaryEngine(
       schema:
-          '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "dart run orm"\n}\n\ndatasource db {\n  provider = "mongodb"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n    id          String   @id @default(auto()) @map("_id") @db.ObjectId\n    name        String\n    username    String   @unique\n    height      String?\n    weight      String?\n    age         String?\n    bloodgroup  String?\n    gender      String?\n    records     Record[]\n    address     String\n}\n\n\nmodel Record {\n    id          String   @id @default(auto()) @map("_id") @db.ObjectId\n    title       String\n    date        String\n    symptoms    String[]\n    diagnosis   String[]\n    treatment   String[]\n    user        User     @relation(fields: [userId], references: [id])\n    userId      String    @unique @db.ObjectId\n}',
+          '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "dart run orm"\n}\n\ndatasource db {\n  provider = "mongodb"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n    id          String   @id @default(auto()) @map("_id") @db.ObjectId\n    name        String\n    username    String   @unique\n    height      String?\n    weight      String?\n    age         String?\n    bloodgroup  String?\n    gender      String?\n    records     Record[]\n    address     String\n    image       String\n}\n\n\nmodel Record {\n    id          String   @id @default(auto()) @map("_id") @db.ObjectId\n    title       String\n    date        String\n    symptoms    String[]\n    diagnosis   String[]\n    treatment   String[]\n    user        User     @relation(fields: [userId], references: [id])\n    userId      String    @unique @db.ObjectId\n}',
       datasources: datasources,
     );
     final metrics = _i1.MetricsClient(engine);
@@ -1197,6 +1197,19 @@ class PrismaClient {
           },
           {
             'name': 'address',
+            'kind': 'scalar',
+            'isList': false,
+            'isRequired': true,
+            'isUnique': false,
+            'isId': false,
+            'isReadOnly': false,
+            'hasDefaultValue': false,
+            'type': 'String',
+            'isGenerated': false,
+            'isUpdatedAt': false,
+          },
+          {
+            'name': 'image',
             'kind': 'scalar',
             'isList': false,
             'isRequired': true,

@@ -70,6 +70,7 @@ class User {
     this.bloodgroup,
     this.gender,
     this.address,
+    this.image,
     this.records,
     this.$count,
   });
@@ -84,6 +85,7 @@ class User {
         bloodgroup: json['bloodgroup'],
         gender: json['gender'],
         address: json['address'],
+        image: json['image'],
         records: (json['records'] as Iterable?)
             ?.map((json) => _i1.Record.fromJson(json)),
         $count: json['_count'] is Map
@@ -109,6 +111,8 @@ class User {
 
   final String? address;
 
+  final String? image;
+
   final Iterable<_i1.Record>? records;
 
   final _i2.UserCountOutputType? $count;
@@ -123,6 +127,7 @@ class User {
         'bloodgroup': bloodgroup,
         'gender': gender,
         'address': address,
+        'image': image,
         'records': records?.map((e) => e.toJson()),
         '_count': $count?.toJson(),
       };

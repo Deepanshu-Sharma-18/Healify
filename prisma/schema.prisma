@@ -24,6 +24,7 @@ model User {
     gender      String?
     records     Record[]
     address     String
+    image       String
 }
 
 
