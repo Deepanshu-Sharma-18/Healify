@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
-import 'package:healify/ui/recordinfo/recordinfo.dart';
+import 'package:healify/ui/screens/recordinfo/recordinfo.dart';
 import 'package:healify/utils/colors.dart';
 
 class RecordCard extends StatelessWidget {
