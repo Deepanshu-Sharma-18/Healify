@@ -37,14 +37,14 @@ dependencies:
   cupertino_icons: ^1.0.6
   web3modal_flutter: ^3.1.1-beta02
   web3dart: ^2.7.3
-  http: ^1.2.1
+  http: ^1.0.0
   get: ^4.6.6
   google_fonts: ^6.2.1
   animated_text_kit: ^4.2.2
-  firebase_core: ^2.28.0
+
   calendar_date_picker2: ^0.5.5
   file_picker: ^8.0.0+1
-  orm: ^3.4.8
+  orm: ^4.1.0
 
   
 
