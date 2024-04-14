@@ -12,7 +12,7 @@ generator db {
 model User {
     id          String   @id @default(auto()) @map("_id") @db.ObjectId
     name        String
-    username    String   @unique
+    username    String   @unique 
     height      String?
     weight      String?
     age         String?
@@ -33,5 +33,5 @@ model Record {
     treatment   String[]
     reports     String[]
     user        User     @relation(fields: [userId], references: [id])
-    userId      String    @unique @db.ObjectId
+    userId    String    @db.ObjectId
 }

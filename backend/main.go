@@ -10,13 +10,17 @@ import (
 
 func init() {
 	initializers.LoadEnv()
-	err := initializers.InitializePrisma()
-	if err != nil {
-		panic(err)
-	}
 }
 
 func main() {
+
+	client := initializers.InitPrisma()
+
+	defer func() {
+		if err := client.Prisma.Disconnect(); err != nil {
+			panic(err)
+		}
+	}()
 
 	port := os.Getenv("PORT")
 
@@ -26,9 +30,15 @@ func main() {
 
 	r := gin.Default()
 
+	//User - CRUD
 	r.POST("/saveUser", controllers.SaveUser)
 	r.GET("/getUser", controllers.GetUser)
 	r.DELETE("/deleteUser", controllers.DeleteUser)
+
+	//Post - CRUD
+	r.POST("/saveRecord", controllers.SaveRecord)
+	r.GET("/getRecord", controllers.GetRecord)
+	r.POST("/deleteRecord", controllers.DeleteRecord)
 
 	r.Run()
 }

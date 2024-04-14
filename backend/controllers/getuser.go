@@ -28,7 +28,7 @@ func GetUser(c *gin.Context) {
 
 	post, err := initializers.Client.User.FindUnique(
 		db.User.Username.Equals(username.Username),
-	).Exec(ctx)
+	).With(db.User.Records.Fetch()).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

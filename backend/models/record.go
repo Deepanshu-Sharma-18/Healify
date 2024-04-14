@@ -7,5 +7,5 @@ type Record struct {
 	Diagnosis []string `bson:"diagnosis" json:"diagnosis" validate:"required"`
 	Treatment []string `bson:"treatment" json:"treatment" validate:"required"`
 	Reports   []string `bson:"reports" json:"reports" validate:"required"`
-	UserId    string   `bson:"userId" json:"userId" validate:"required"`
+	UserId    string   `bson:"userid" json:"userid" validate:"required"`
 }
