@@ -1,7 +1,7 @@
 datasource db {
   // could be postgresql or mysql
   provider = "mongodb"
-  url      = "mongodb+srv://deepanshugcloud:deepanshugcloud@cluster0.6eu2ec1.mongodb.net/healify"
+  url      = env("DATABASE_URL")
 }
 
 generator db {
