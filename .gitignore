@@ -46,6 +46,6 @@ app.*.map.json
 /blockchain/node_modules/
 /blockchain/.env
 
-/backend/schema.prisma
+
 /backend/go.sum
 /backend/.env

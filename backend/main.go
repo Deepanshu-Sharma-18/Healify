@@ -40,5 +40,9 @@ func main() {
 	r.GET("/getRecord", controllers.GetRecord)
 	r.POST("/deleteRecord", controllers.DeleteRecord)
 
+	//Presigned URL
+	r.POST("/generateUploadPresignedUrl", controllers.GenerateUploadPresignedUrl)
+	r.POST("/generateDownloadPresignedUrl", controllers.GenerateDownloadPresignUrl)
+
 	r.Run()
 }
