@@ -10,6 +10,7 @@ import (
 
 func init() {
 	initializers.LoadEnv()
+	initializers.InitPresignClient()
 }
 
 func main() {

@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/Deepanshu-sharma-18/healify-backend/initializers"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,8 @@ func GenerateUploadPresignedUrl(c *gin.Context) {
 	type File struct {
 		BucketName string            `json:"bucketName" validate:"required"`
 		ObjectKey  string            `json:"objectKey" validate:"required"`
+		Content    string            `json:"content" validate:"required"`
+		Username   string            `json:"username" validate:"required"`
 		Metadata   map[string]string `json:"metadata"`
 	}
 
@@ -26,20 +29,11 @@ func GenerateUploadPresignedUrl(c *gin.Context) {
 		return
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
-	if err != nil {
-		panic(err)
-	}
-
-	client := s3.NewFromConfig(cfg)
-
-	svc := s3.NewPresignClient(client)
-
 	expiration := time.Minute * 10
 
-	req, err := svc.PresignPutObject(context.Background(), &s3.PutObjectInput{
+	req, err := initializers.PresignClient.PresignPutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:   aws.String(file.BucketName),
-		Key:      aws.String(file.ObjectKey),
+		Key:      aws.String(fmt.Sprintf("%s/%s/%s", file.Username, file.Content, file.ObjectKey)),
 		Metadata: file.Metadata,
 	},
 		func(o *s3.PresignOptions) {
@@ -60,6 +54,8 @@ func GenerateDownloadPresignUrl(c *gin.Context) {
 	type File struct {
 		BucketName string `json:"bucketName" validate:"required"`
 		ObjectKey  string `json:"objectKey" validate:"required"`
+		Username   string `json:"username" validate:"required"`
+		Content    string `json:"content" validate:"required"`
 	}
 
 	var file File
@@ -69,16 +65,9 @@ func GenerateDownloadPresignUrl(c *gin.Context) {
 		return
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
-	if err != nil {
-		panic(err)
-	}
-
-	svc := s3.NewPresignClient(s3.NewFromConfig(cfg))
-
-	req, err := svc.PresignGetObject(context.Background(), &s3.GetObjectInput{
+	req, err := initializers.PresignClient.PresignGetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(file.BucketName),
-		Key:    aws.String(file.ObjectKey),
+		Key:    aws.String(fmt.Sprintf("%s/%s/%s", file.Username, file.Content, file.ObjectKey)),
 	}, func(o *s3.PresignOptions) {
 		o.Expires = time.Hour * 24 * 31 * 12
 	})
