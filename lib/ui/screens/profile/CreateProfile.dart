@@ -24,6 +24,8 @@ class _CreateProfileState extends State<CreateProfile> {
   var weight = TextEditingController();
   var bloodGroup = TextEditingController();
   var gender = TextEditingController();
+  var name = TextEditingController();
+  var username = TextEditingController();
 
   Future<void> saveProfile() async {}
 
@@ -56,6 +58,20 @@ class _CreateProfileState extends State<CreateProfile> {
                   fontweight: FontWeight.w400,
                   fontcolor: Colors.black,
                 ),
+                SizedBox(
+                  height: 30,
+                ),
+                MyTextfield(
+                    controller: name,
+                    hintText: "Enter name",
+                    labelText: "Name"),
+                SizedBox(
+                  height: 30,
+                ),
+                MyTextfield(
+                    controller: username,
+                    hintText: "Enter username",
+                    labelText: "Username"),
                 SizedBox(
                   height: 30,
                 ),

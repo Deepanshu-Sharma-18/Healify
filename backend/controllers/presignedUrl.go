@@ -15,8 +15,8 @@ import (
 func GenerateUploadPresignedUrl(c *gin.Context) {
 
 	type File struct {
-		BucketName string            `json:"bucketName" validate:"required"`
-		ObjectKey  string            `json:"objectKey" validate:"required"`
+		BucketName string            `json:"bucketname" validate:"required"`
+		ObjectKey  string            `json:"objectkey" validate:"required"`
 		Content    string            `json:"content" validate:"required"`
 		Username   string            `json:"username" validate:"required"`
 		Metadata   map[string]string `json:"metadata"`

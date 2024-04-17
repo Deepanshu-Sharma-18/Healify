@@ -45,6 +45,8 @@ dependencies:
   calendar_date_picker2: ^0.5.5
   file_picker: ^8.0.0+1
   orm: ^4.1.0
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.8
 
   
 

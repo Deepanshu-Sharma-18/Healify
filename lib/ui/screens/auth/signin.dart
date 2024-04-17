@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
+import 'package:healify/ui/screens/auth/auth.dart';
 import 'package:healify/ui/screens/auth/signup.dart';
 import 'package:healify/utils/colors.dart';
 
@@ -14,6 +15,8 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  AuthController authController = Get.find<AuthController>();
+
   @override
   Widget build(BuildContext context) {
     var email = TextEditingController();
@@ -134,7 +137,9 @@ class _SignInState extends State<SignIn> {
                     height: 20,
                   ),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      authController.signIn(email.text, password.text);
+                    },
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.all<Color>(ColorTheme.green),

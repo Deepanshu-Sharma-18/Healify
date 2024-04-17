@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
+import 'package:healify/ui/screens/auth/auth.dart';
 import 'package:healify/ui/screens/auth/signin.dart';
 import 'package:healify/ui/screens/profile/CreateProfile.dart';
 import 'package:healify/utils/colors.dart';
@@ -16,9 +17,9 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  AuthController authController = Get.find<AuthController>();
   @override
   Widget build(BuildContext context) {
-    var name = TextEditingController();
     var email = TextEditingController();
     var password = TextEditingController();
 
@@ -53,14 +54,6 @@ class _SignUpState extends State<SignUp> {
                     fontsize: 15,
                     fontweight: FontWeight.w400,
                     fontcolor: Colors.black,
-                  ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  MyTextfield(
-                    controller: name,
-                    hintText: "Enter name",
-                    labelText: "Name",
                   ),
                   const SizedBox(
                     height: 30,
@@ -146,7 +139,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   OutlinedButton(
                     onPressed: () {
-                      Get.off(() => CreateProfile());
+                      authController.signUp(email.text, password.text);
                     },
                     style: ButtonStyle(
                       backgroundColor:
