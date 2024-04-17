@@ -137,30 +137,9 @@ class _CreateProfileState extends State<CreateProfile> {
                     ),
                   ),
                 ),
-                Container(
-                    width: double.infinity,
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Get.back();
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          MyText(
-                            text: "Skip ",
-                            fontcolor: ColorTheme.metamask,
-                            fontsize: 15,
-                            fontweight: FontWeight.bold,
-                          ),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: ColorTheme.metamask,
-                            size: 20,
-                          )
-                        ],
-                      ),
-                    ))
+                const SizedBox(
+                  height: 50,
+                ),
               ],
             ),
           ),

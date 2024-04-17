@@ -16,18 +16,18 @@ func GetUser(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	type Username struct {
-		Username string `bson:"username" json:"username" validate:"required"`
+	type Auth struct {
+		AuthId string `bson:"authid" json:"authid" validate:"required"`
 	}
-	var username Username
+	var auth Auth
 
-	if err := c.BindJSON(&username); err != nil {
+	if err := c.BindJSON(&auth); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	post, err := initializers.Client.User.FindUnique(
-		db.User.Username.Equals(username.Username),
+	post, err := initializers.Client.User.FindFirst(
+		db.User.AuthID.Equals(auth.AuthId),
 	).With(db.User.Records.Fetch()).Exec(ctx)
 
 	if err != nil {

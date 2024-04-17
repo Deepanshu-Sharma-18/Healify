@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/firebase_options.dart';
 import 'package:healify/ui/screens/auth/auth.dart';
-import 'package:healify/ui/screens/auth/signup.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
+import 'package:healify/ui/screens/splash/splashscreen.dart';
 
 void main() async {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(),
         useMaterial3: true,
       ),
-      home: SignUp(),
+      home: SplashScreen(),
     );
   }
 }

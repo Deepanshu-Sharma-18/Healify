@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
@@ -37,10 +39,10 @@ class _SignInState extends State<SignIn> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(
-                    height: 100,
+                    height: 150,
                   ),
                   MyText(
-                    text: "Sign Up",
+                    text: "Sign In",
                     fontsize: 20,
                     fontweight: FontWeight.bold,
                     fontcolor: Colors.black,
@@ -65,33 +67,47 @@ class _SignInState extends State<SignIn> {
                   const SizedBox(
                     height: 30,
                   ),
-                  TextField(
-                    obscureText: true,
-                    controller: password,
-                    style: GoogleFonts.dmSans(
-                        fontSize: 15,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      hintText: "Enter password",
-                      hintStyle: const TextStyle(
-                        color: ColorTheme.darkgrey,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      labelStyle: const TextStyle(
-                        color: ColorTheme.darkgrey,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      labelText: "Password",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: ColorTheme.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Colors.black),
+                  Obx(
+                    () => TextField(
+                      obscureText: authController.isVisible.value,
+                      controller: password,
+                      style: GoogleFonts.dmSans(
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600),
+                      decoration: InputDecoration(
+                        hintText: "Enter password",
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            authController.isVisible.value =
+                                !authController.isVisible.value;
+                          },
+                          icon: Icon(
+                            authController.isVisible.value
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: ColorTheme.darkgrey,
+                          ),
+                        ),
+                        hintStyle: const TextStyle(
+                          color: ColorTheme.darkgrey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        labelStyle: const TextStyle(
+                          color: ColorTheme.darkgrey,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        labelText: "Password",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: ColorTheme.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.black),
+                        ),
                       ),
                     ),
                   ),
@@ -138,7 +154,14 @@ class _SignInState extends State<SignIn> {
                   ),
                   OutlinedButton(
                     onPressed: () {
-                      authController.signIn(email.text, password.text);
+                      if (email.text.isNotEmpty && password.text.isNotEmpty) {
+                        authController.signIn(email.text, password.text);
+                        if (FirebaseAuth.instance.currentUser != null) {
+                          Get.off(() => authController.checkUser());
+                        }
+                      } else {
+                        Get.snackbar("Error", "Please fill all fields");
+                      }
                     },
                     style: ButtonStyle(
                       backgroundColor:

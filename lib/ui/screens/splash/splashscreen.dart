@@ -1,8 +1,12 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/screens/auth/signin.dart';
 import 'package:healify/ui/screens/profile/CreateProfile.dart';
+import 'package:healify/utils/colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,61 +18,25 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
-    void initState() {
-      super.initState();
-      Future.delayed(const Duration(seconds: 3), () {
-        Get.to(() => CreateProfile(), transition: Transition.fadeIn);
-      });
-    }
-
-    return Container(
+    return Scaffold(
+      body: Container(
         height: double.infinity,
         width: double.infinity,
-        child: Column(
-          children: [
-            SizedBox(
-              height: 50,
-            ),
-            AnimatedTextKit(
-              animatedTexts: [
-                TyperAnimatedText(
-                  "Welcome to Healify",
-                  textStyle: GoogleFonts.dmSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            AnimatedTextKit(
-              animatedTexts: [
-                TyperAnimatedText(
-                  "Welcome to Healify",
-                  textStyle: GoogleFonts.dmSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 77, 77, 77),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            AnimatedOpacity(
-              opacity: 1,
-              duration: const Duration(seconds: 2),
-              child: Icon(
-                Icons.medical_services,
-                size: 100,
-                color: Colors.blue,
-              ),
-            ),
-          ],
-        ));
+        color: ColorTheme.green,
+        child: AnimatedSplashScreen(
+          backgroundColor: ColorTheme.green,
+          splash: Center(
+              child: MyText(
+            fontcolor: Colors.black,
+            fontsize: 30,
+            text: 'Healify',
+            fontweight: FontWeight.bold,
+          )),
+          nextScreen: FirebaseAuth.instance.currentUser != null
+              ? CreateProfile()
+              : SignIn(),
+        ),
+      ),
+    );
   }
 }
