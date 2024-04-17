@@ -34,6 +34,7 @@ func SaveUser(c *gin.Context) {
 		db.User.Gender.Set(user.Gender),
 		db.User.Height.Set(user.Height),
 		db.User.Weight.Set(user.Weight),
+		db.User.AuthID.Set(user.AuthId),
 	).Exec(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

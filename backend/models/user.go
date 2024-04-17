@@ -11,4 +11,5 @@ type User struct {
 	Records    []Record `bson:"records" json:"records"`
 	Address    string   `bson:"address" json:"address" validate:"required"`
 	Image      string   `bson:"image" json:"image"`
+	AuthId     string   `bson:"authId" json:"authId" validate:"required"`
 }

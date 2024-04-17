@@ -21,6 +21,7 @@ model User {
     records     Record[]
     address     String
     image       String
+    authId      String
 }
 
 
