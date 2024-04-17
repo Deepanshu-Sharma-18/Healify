@@ -29,12 +29,12 @@ func SaveUser(c *gin.Context) {
 		db.User.Username.Set(user.Username),
 		db.User.Address.Set(user.Address),
 		db.User.Image.Set(user.Image),
+		db.User.AuthID.Set(user.AuthId),
+		db.User.Height.Set(user.Height),
+		db.User.Weight.Set(user.Weight),
 		db.User.Age.Set(user.Age),
 		db.User.Bloodgroup.Set(user.Bloodgroup),
 		db.User.Gender.Set(user.Gender),
-		db.User.Height.Set(user.Height),
-		db.User.Weight.Set(user.Weight),
-		db.User.AuthID.Set(user.AuthId),
 	).Exec(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
