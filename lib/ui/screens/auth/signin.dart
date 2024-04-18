@@ -7,6 +7,8 @@ import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/screens/auth/auth.dart';
 import 'package:healify/ui/screens/auth/signup.dart';
+import 'package:healify/ui/screens/loader/loader.dart';
+import 'package:healify/ui/screens/metamask/Login.dart';
 import 'package:healify/utils/colors.dart';
 
 class SignIn extends StatefulWidget {
@@ -157,7 +159,7 @@ class _SignInState extends State<SignIn> {
                       if (email.text.isNotEmpty && password.text.isNotEmpty) {
                         authController.signIn(email.text, password.text);
                         if (FirebaseAuth.instance.currentUser != null) {
-                          Get.off(() => authController.checkUser());
+                          Get.off(() => LoginMetamask());
                         }
                       } else {
                         Get.snackbar("Error", "Please fill all fields");

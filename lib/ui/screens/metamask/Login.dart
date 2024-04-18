@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/home/home.dart';
+import 'package:healify/ui/screens/loader/loader.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:http/http.dart' as http;
@@ -136,7 +137,7 @@ class _LoginMetaskState extends State<LoginMetamask> {
                   loginController.w3mService!.isConnected == true,
               child: OutlinedButton(
                 onPressed: () {
-                  Get.off(() => HomeScreen());
+                  Get.off(() => LoadingScreen());
                 },
                 style: ButtonStyle(
                   backgroundColor:

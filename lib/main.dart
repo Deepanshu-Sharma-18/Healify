@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:healify/firebase_options.dart';
 import 'package:healify/ui/screens/auth/auth.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/splash/splashscreen.dart';
 
 void main() async {
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(LoginController());
     Get.put(AuthController());
+    Get.put(ProfileController());
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

@@ -3,6 +3,10 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
+import 'package:healify/ui/screens/auth/auth.dart';
+import 'package:healify/ui/screens/home/home.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:orm/orm.dart';
 
@@ -14,10 +18,9 @@ class CreateProfile extends StatefulWidget {
 }
 
 class _CreateProfileState extends State<CreateProfile> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  var profileController = Get.find<ProfileController>();
+  var authController = Get.find<AuthController>();
+  var loginController = Get.find<LoginController>();
 
   var height = TextEditingController();
   var age = TextEditingController();
@@ -27,7 +30,20 @@ class _CreateProfileState extends State<CreateProfile> {
   var name = TextEditingController();
   var username = TextEditingController();
 
-  Future<void> saveProfile() async {}
+  Future<void> saveProfile() async {
+    var id = authController.auth.currentUser!.uid;
+    await profileController.saveProfile(
+        name.text,
+        username.text,
+        height.text,
+        weight.text,
+        age.text,
+        bloodGroup.text,
+        gender.text,
+        loginController.accountNo,
+        "",
+        id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +129,7 @@ class _CreateProfileState extends State<CreateProfile> {
                 OutlinedButton(
                   onPressed: () async {
                     await saveProfile();
-                    // Get.off(() => LoginMetamask());
+                    Get.off(() => HomeScreen());
                   },
                   style: ButtonStyle(
                     backgroundColor:
