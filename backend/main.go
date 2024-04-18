@@ -33,12 +33,12 @@ func main() {
 
 	//User - CRUD
 	r.POST("/saveUser", controllers.SaveUser)
-	r.GET("/getUser", controllers.GetUser)
+	r.POST("/getUser", controllers.GetUser)
 	r.DELETE("/deleteUser", controllers.DeleteUser)
 
 	//Post - CRUD
 	r.POST("/saveRecord", controllers.SaveRecord)
-	r.GET("/getRecord", controllers.GetRecord)
+	r.POST("/getRecord", controllers.GetRecord)
 	r.POST("/deleteRecord", controllers.DeleteRecord)
 
 	//Presigned URL
