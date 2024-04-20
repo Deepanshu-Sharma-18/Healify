@@ -20,8 +20,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
   var profileController = Get.find<ProfileController>();
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
+    getProfile();
+  }
+
+  Future<void> getProfile() async {
     try {
       await profileController
           .getProfile(FirebaseAuth.instance.currentUser!.uid);

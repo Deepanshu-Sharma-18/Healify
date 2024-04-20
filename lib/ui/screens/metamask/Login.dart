@@ -32,7 +32,9 @@ class _LoginMetaskState extends State<LoginMetamask> {
     loginController.initialize();
 
     timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (loginController.w3mService != null) setState(() {});
+      if (loginController.w3mService != null) {
+        Get.off(() => LoadingScreen());
+      }
     });
   }
 
@@ -132,36 +134,36 @@ class _LoginMetaskState extends State<LoginMetamask> {
               ),
             ),
             const SizedBox(height: 30),
-            Visibility(
-              visible: loginController.w3mService != null &&
-                  loginController.w3mService!.isConnected == true,
-              child: OutlinedButton(
-                onPressed: () {
-                  Get.off(() => LoadingScreen());
-                },
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(ColorTheme.green),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  width: double.infinity,
-                  height: 60,
-                  alignment: Alignment.center,
-                  child: MyText(
-                    text: "Proceed",
-                    fontcolor: Colors.black,
-                    fontsize: 17,
-                    fontweight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
+            // Visibility(
+            //   visible: loginController.w3mService != null &&
+            //       loginController.w3mService!.isConnected == true,
+            //   child: OutlinedButton(
+            //     onPressed: () {
+            //       Get.off(() => LoadingScreen());
+            //     },
+            //     style: ButtonStyle(
+            //       backgroundColor:
+            //           MaterialStateProperty.all<Color>(ColorTheme.green),
+            //       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            //         RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(15),
+            //         ),
+            //       ),
+            //     ),
+            //     child: Container(
+            //       padding: const EdgeInsets.symmetric(horizontal: 20),
+            //       width: double.infinity,
+            //       height: 60,
+            //       alignment: Alignment.center,
+            //       child: MyText(
+            //         text: "Proceed",
+            //         fontcolor: Colors.black,
+            //         fontsize: 17,
+            //         fontweight: FontWeight.bold,
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

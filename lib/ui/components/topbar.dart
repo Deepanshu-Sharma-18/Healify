@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:web3modal_flutter/widgets/w3m_account_button.dart';
 
@@ -11,6 +12,8 @@ class TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var loginController = Get.find<LoginController>();
+    var profileController = Get.find<ProfileController>();
+
     return Container(
       width: double.infinity,
       child: Row(
@@ -25,10 +28,11 @@ class TopBar extends StatelessWidget {
                     width: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(50),
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                          "https://images.saymedia-content.com/.image/c_limit%2Ccs_srgb%2Cq_auto:eco%2Cw_700/MTk4MDQzMTI5NzY3NTM1ODA2/short-captions-for-profile-pictures.webp",
-                        ),
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: NetworkImage(profileController.isProfileNull
+                            ? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                            : profileController.profile!.data!.image!),
                       ),
                       color: Colors.grey,
                     ),
@@ -42,16 +46,25 @@ class TopBar extends StatelessWidget {
                       fontsize: 15,
                       fontcolor: Colors.black,
                       fontweight: FontWeight.w500,
-                      text: "Hello Jacob!",
+                      text: profileController.isProfileNull
+                          ? "Hi there!"
+                          : "Hello, " +
+                              profileController.profile!.data!.name!
+                                  .toString()
+                                  .removeAllWhitespace +
+                              "!",
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          W3MAccountButton(
-            service: loginController.w3mService!,
-            size: BaseButtonSize.small,
+          Container(
+            width: 183,
+            child: W3MAccountButton(
+              service: loginController.w3mService!,
+              size: BaseButtonSize.values[0],
+            ),
           ),
         ],
       ),

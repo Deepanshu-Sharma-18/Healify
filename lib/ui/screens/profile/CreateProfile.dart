@@ -31,6 +31,15 @@ class _CreateProfileState extends State<CreateProfile> {
   var username = TextEditingController();
 
   Future<void> saveProfile() async {
+    if (name.text.isEmpty ||
+        username.text.isEmpty ||
+        height.text.isEmpty ||
+        weight.text.isEmpty ||
+        age.text.isEmpty ||
+        bloodGroup.text.isEmpty) {
+      Get.snackbar("Failure", "Please fill all the fields");
+      return;
+    }
     var id = authController.auth.currentUser!.uid;
     await profileController.saveProfile(
         name.text,
@@ -40,9 +49,11 @@ class _CreateProfileState extends State<CreateProfile> {
         age.text,
         bloodGroup.text,
         gender.text,
-        loginController.accountNo,
+        loginController.accountNo.toString(),
         "",
         id);
+
+    await profileController.getProfile(id);
   }
 
   @override
@@ -107,14 +118,14 @@ class _CreateProfileState extends State<CreateProfile> {
                 ),
                 MyTextfield(
                     controller: weight,
-                    hintText: "Enter your weight",
+                    hintText: "Enter your weight in Kg",
                     labelText: "Weight"),
                 SizedBox(
                   height: 30,
                 ),
                 MyTextfield(
                     controller: height,
-                    hintText: "Enter your height",
+                    hintText: "Enter your height in cm",
                     labelText: "Height"),
                 SizedBox(
                   height: 30,

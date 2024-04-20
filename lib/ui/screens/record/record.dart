@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:healify/ui/components/recordcard.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/addrecord.dart';
 import 'package:healify/utils/colors.dart';
 
@@ -14,6 +15,8 @@ class RecordScreen extends StatefulWidget {
 }
 
 class _RecordScreenState extends State<RecordScreen> {
+  var profileController = Get.find<ProfileController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,16 +79,51 @@ class _RecordScreenState extends State<RecordScreen> {
                     fontsize: 13,
                     fontcolor: Colors.black,
                     fontweight: FontWeight.w500,
-                    text: "(25)",
+                    text: "(" +
+                        profileController.profile!.data!.records!.length
+                            .toString()
+                            .removeAllWhitespace +
+                        ")",
                   ),
                 ],
               ),
-              for (int i = 0; i < 10; i++)
-                RecordCard(
-                  date: "13/13/13",
-                  title: "Diabetes",
-                  color: ColorTheme.grey,
-                ),
+              profileController.profile!.data!.records!.length == 0
+                  ? Container(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: Center(
+                        child: MyText(
+                          fontsize: 15,
+                          fontcolor: Colors.black,
+                          fontweight: FontWeight.w500,
+                          text: "No records found",
+                        ),
+                      ),
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: List.generate(
+                            profileController.profile!.data!.records!.length,
+                            (index) => RecordCard(
+                              id: profileController
+                                  .profile!.data!.records![index].id
+                                  .toString(),
+                              date: profileController
+                                  .profile!.data!.records![index].date
+                                  .toString(),
+                              title: profileController
+                                  .profile!.data!.records![index].title
+                                  .toString(),
+                              color: ColorTheme.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
               const SizedBox(
                 height: 20,
               ),

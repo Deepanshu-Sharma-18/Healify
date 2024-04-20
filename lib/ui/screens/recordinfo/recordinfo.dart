@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
+import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/record/editrecord.dart';
@@ -9,22 +10,31 @@ import 'package:healify/utils/colors.dart';
 class RecordInfo extends StatefulWidget {
   final String date;
   final String title;
-  final dynamic symptoms;
-  final dynamic diagnosis;
-  final dynamic treatment;
+  final List<dynamic>? symptoms;
+  final List<dynamic>? diagnosis;
+  final List<dynamic>? treatment;
+  final List<dynamic>? reports;
   const RecordInfo(
       {super.key,
       required this.date,
       required this.title,
       this.symptoms,
       this.diagnosis,
-      this.treatment});
+      this.treatment,
+      this.reports});
 
   @override
   State<RecordInfo> createState() => _RecordInfoState();
 }
 
 class _RecordInfoState extends State<RecordInfo> {
+  var presignController = PresignController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,14 +96,15 @@ class _RecordInfoState extends State<RecordInfo> {
                         children: [
                           InkWell(
                             onTap: () {
-                              print("Edit Record");
-                              Get.to(() => EditRecord(
-                                  date: DateTime.now(),
-                                  title: "",
-                                  symptoms: "",
-                                  diagnosis: "",
-                                  treatment: "",
-                                  records: []));
+                              // Get.to(
+                              //   () => EditRecord(
+                              //       date: DateTime.now(),
+                              //       title: widget.title,
+                              //       symptoms: widget.symptoms ?? [],
+                              //       diagnosis: widget.diagnosis ?? [],
+                              //       treatment: widget.treatment ?? [],
+                              //       records: widget.reports!),
+                              // );
                             },
                             child: Container(
                               height: 45,
@@ -144,11 +155,25 @@ class _RecordInfoState extends State<RecordInfo> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MyText(
-                        fontsize: 20,
-                        fontcolor: Colors.black,
-                        fontweight: FontWeight.bold,
-                        text: "Symptoms",
+                      Row(
+                        children: [
+                          MyText(
+                            fontsize: 20,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.bold,
+                            text: "Symptoms",
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          MyText(
+                            fontsize: 13,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.w500,
+                            text:
+                                "(${widget.symptoms != null ? widget.symptoms!.length.toString() : "0"})",
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 10,
@@ -159,21 +184,11 @@ class _RecordInfoState extends State<RecordInfo> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            BulletText(
-                              text: "Cough",
-                            ),
-                            BulletText(
-                              text: "Fever",
-                            ),
-                            BulletText(
-                              text: "Headache",
-                            ),
-                            BulletText(
-                              text: "Sore Throat",
-                            ),
-                            BulletText(
-                              text: "Shortness of Breath",
-                            ),
+                            if (widget.symptoms != null)
+                              for (var i in widget.symptoms!)
+                                BulletText(
+                                  text: i,
+                                ),
                           ],
                         ),
                       )
@@ -194,11 +209,27 @@ class _RecordInfoState extends State<RecordInfo> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MyText(
-                        fontsize: 20,
-                        fontcolor: Colors.black,
-                        fontweight: FontWeight.bold,
-                        text: "Diagnosis",
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          MyText(
+                            fontsize: 20,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.bold,
+                            text: "Diagnosis",
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          MyText(
+                            fontsize: 13,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.w500,
+                            text:
+                                "(${widget.diagnosis != null ? widget.diagnosis!.length.toString() : "0"})",
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 10,
@@ -209,21 +240,11 @@ class _RecordInfoState extends State<RecordInfo> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            BulletText(
-                              text: "Cough",
-                            ),
-                            BulletText(
-                              text: "Fever",
-                            ),
-                            BulletText(
-                              text: "Headache",
-                            ),
-                            BulletText(
-                              text: "Sore Throat",
-                            ),
-                            BulletText(
-                              text: "Shortness of Breath",
-                            ),
+                            if (widget.diagnosis != null)
+                              for (var i in widget.diagnosis!)
+                                BulletText(
+                                  text: i,
+                                ),
                           ],
                         ),
                       ),
@@ -247,11 +268,25 @@ class _RecordInfoState extends State<RecordInfo> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MyText(
-                        fontsize: 20,
-                        fontcolor: Colors.black,
-                        fontweight: FontWeight.bold,
-                        text: "Treatment",
+                      Row(
+                        children: [
+                          MyText(
+                            fontsize: 20,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.bold,
+                            text: "Treatment",
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          MyText(
+                            fontsize: 13,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.w500,
+                            text:
+                                "(${widget.treatment != null ? widget.treatment!.length.toString() : "0"})",
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 10,
@@ -262,21 +297,11 @@ class _RecordInfoState extends State<RecordInfo> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            BulletText(
-                              text: "Cough",
-                            ),
-                            BulletText(
-                              text: "Fever",
-                            ),
-                            BulletText(
-                              text: "Headache",
-                            ),
-                            BulletText(
-                              text: "Sore Throat",
-                            ),
-                            BulletText(
-                              text: "Shortness of Breath",
-                            ),
+                            if (widget.treatment != null)
+                              for (var i in widget.treatment!)
+                                BulletText(
+                                  text: i,
+                                ),
                           ],
                         ),
                       )
@@ -305,87 +330,9 @@ class _RecordInfoState extends State<RecordInfo> {
                     physics: NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
                     children: [
-                      Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: ColorTheme.grey,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.red,
-                              size: 20,
-                            ),
-                            const SizedBox(
-                              width: 3,
-                            ),
-                            MyText(
-                              fontsize: 15,
-                              fontcolor: Colors.black,
-                              fontweight: FontWeight.w600,
-                              text: "Report 1.pdf",
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: ColorTheme.grey,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.red,
-                              size: 20,
-                            ),
-                            const SizedBox(
-                              width: 3,
-                            ),
-                            MyText(
-                              fontsize: 15,
-                              fontcolor: Colors.black,
-                              fontweight: FontWeight.w600,
-                              text: "Report 1.pdf",
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: ColorTheme.grey,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.red,
-                              size: 20,
-                            ),
-                            const SizedBox(
-                              width: 3,
-                            ),
-                            MyText(
-                              fontsize: 15,
-                              fontcolor: Colors.black,
-                              fontweight: FontWeight.w600,
-                              text: "Report 1.pdf",
-                            ),
-                          ],
-                        ),
-                      ),
+                      // for (var i in widget.reports)
+                      //   FileCard(fileName: "", fileType: "")
+                      //TODO
                     ],
                   ),
                 ),
@@ -400,3 +347,5 @@ class _RecordInfoState extends State<RecordInfo> {
     );
   }
 }
+
+class PresignController {}

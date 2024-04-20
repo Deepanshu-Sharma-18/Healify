@@ -69,7 +69,7 @@ func GenerateDownloadPresignUrl(c *gin.Context) {
 		Bucket: aws.String(file.BucketName),
 		Key:    aws.String(fmt.Sprintf("%s/%s/%s", file.Username, file.Content, file.ObjectKey)),
 	}, func(o *s3.PresignOptions) {
-		o.Expires = time.Hour * 24 * 31 * 12
+		o.Expires = time.Hour * 24 * 6
 	})
 
 	if err != nil {

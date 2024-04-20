@@ -9,6 +9,7 @@ import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/screens/auth/auth.dart';
 import 'package:healify/ui/screens/auth/signin.dart';
+import 'package:healify/ui/screens/metamask/Login.dart';
 import 'package:healify/ui/screens/profile/CreateProfile.dart';
 import 'package:healify/utils/colors.dart';
 
@@ -155,11 +156,11 @@ class _SignUpState extends State<SignUp> {
                     height: 20,
                   ),
                   OutlinedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (email.text.isNotEmpty && password.text.isNotEmpty) {
-                        authController.signUp(email.text, password.text);
+                        await authController.signUp(email.text, password.text);
                         if (FirebaseAuth.instance.currentUser != null) {
-                          Get.off(() => CreateProfile());
+                          Get.off(() => LoginMetamask());
                         }
                       } else {
                         Get.snackbar("Error", "Please fill all fields");

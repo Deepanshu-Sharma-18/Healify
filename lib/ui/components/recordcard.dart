@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/recordinfo/recordinfo.dart';
 import 'package:healify/utils/colors.dart';
 
 class RecordCard extends StatelessWidget {
+  final String id;
   final String date;
   final String title;
   final Color color;
@@ -12,18 +14,25 @@ class RecordCard extends StatelessWidget {
       {super.key,
       required this.date,
       required this.title,
-      required this.color});
+      required this.color,
+      required this.id});
 
   @override
   Widget build(BuildContext context) {
+    var profileController = Get.find<ProfileController>();
+
+    var list = profileController.profile!.data!.records!
+        .firstWhere((element) => element.id == id);
     return InkWell(
       onTap: () => Get.to(
         () => RecordInfo(
-            date: "13/13/12",
-            title: "title",
-            symptoms: "symptoms",
-            diagnosis: "diagnosis",
-            treatment: "treatment"),
+          date: list.date!,
+          title: list.title!,
+          symptoms: list.symptoms ?? [],
+          diagnosis: list.diagnosis ?? [],
+          treatment: list.diagnosis ?? [],
+          reports: list.reports ?? [],
+        ),
       ),
       child: Container(
         width: double.infinity,
