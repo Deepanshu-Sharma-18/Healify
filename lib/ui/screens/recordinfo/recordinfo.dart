@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
@@ -14,6 +15,7 @@ class RecordInfo extends StatefulWidget {
   final List<dynamic>? diagnosis;
   final List<dynamic>? treatment;
   final List<dynamic>? reports;
+  final String id;
   const RecordInfo(
       {super.key,
       required this.date,
@@ -21,7 +23,8 @@ class RecordInfo extends StatefulWidget {
       this.symptoms,
       this.diagnosis,
       this.treatment,
-      this.reports});
+      this.reports,
+      required this.id});
 
   @override
   State<RecordInfo> createState() => _RecordInfoState();
@@ -96,15 +99,16 @@ class _RecordInfoState extends State<RecordInfo> {
                         children: [
                           InkWell(
                             onTap: () {
-                              // Get.to(
-                              //   () => EditRecord(
-                              //       date: DateTime.now(),
-                              //       title: widget.title,
-                              //       symptoms: widget.symptoms ?? [],
-                              //       diagnosis: widget.diagnosis ?? [],
-                              //       treatment: widget.treatment ?? [],
-                              //       records: widget.reports!),
-                              // );
+                              Get.to(
+                                () => EditRecord(
+                                    id: widget.id,
+                                    date: widget.date,
+                                    title: widget.title,
+                                    symptoms: widget.symptoms ?? [],
+                                    diagnosis: widget.diagnosis ?? [],
+                                    treatment: widget.treatment ?? [],
+                                    records: widget.reports!),
+                              );
                             },
                             child: Container(
                               height: 45,
@@ -330,9 +334,10 @@ class _RecordInfoState extends State<RecordInfo> {
                     physics: NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
                     children: [
-                      // for (var i in widget.reports)
-                      //   FileCard(fileName: "", fileType: "")
-                      //TODO
+                      if (widget.reports != null)
+                        for (var i in widget.reports!)
+                          if (i.toString().contains("image"))
+                            CachedNetworkImage(imageUrl: i.toString())
                     ],
                   ),
                 ),

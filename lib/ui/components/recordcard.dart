@@ -26,13 +26,13 @@ class RecordCard extends StatelessWidget {
     return InkWell(
       onTap: () => Get.to(
         () => RecordInfo(
-          date: list.date!,
-          title: list.title!,
-          symptoms: list.symptoms ?? [],
-          diagnosis: list.diagnosis ?? [],
-          treatment: list.diagnosis ?? [],
-          reports: list.reports ?? [],
-        ),
+            date: list.date!,
+            title: list.title!,
+            symptoms: list.symptoms ?? [],
+            diagnosis: list.diagnosis ?? [],
+            treatment: list.treatment ?? [],
+            reports: list.reports ?? [],
+            id: list.id!),
       ),
       child: Container(
         width: double.infinity,

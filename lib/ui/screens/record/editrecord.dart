@@ -1,23 +1,28 @@
 import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:healify/models/responsepresign.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/controller/editpost.dart';
+import 'package:healify/ui/screens/record/controller/post.dart';
+import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/utils/colors.dart';
+import 'package:file_picker/file_picker.dart';
 
 class EditRecord extends StatefulWidget {
-  final DateTime date;
+  final String date;
   final String title;
   final List<dynamic>? symptoms;
   final List<dynamic>? diagnosis;
   final List<dynamic>? treatment;
   final List<dynamic>? records;
+  final String id;
   const EditRecord(
       {super.key,
       required this.date,
@@ -25,41 +30,102 @@ class EditRecord extends StatefulWidget {
       required this.symptoms,
       required this.diagnosis,
       required this.treatment,
-      required this.records});
+      required this.records,
+      required this.id});
 
   @override
-  State<EditRecord> createState() => _EditRecordState();
+  State<EditRecord> createState() => _AddRecordState();
 }
 
-class _EditRecordState extends State<EditRecord> {
-  var editPostController = EditPost();
-  TextEditingController title = TextEditingController();
-  TextEditingController symptoms = TextEditingController();
-  TextEditingController diagnosis = TextEditingController();
-  TextEditingController treatment = TextEditingController();
+class _AddRecordState extends State<EditRecord> {
+  var profileController = Get.find<ProfileController>();
 
-  late DateTime? date;
+  var post = Post();
+  var prsignController = Presign();
+
+  var editPostController = EditPost();
+  late TextEditingController title;
+  var symptoms = TextEditingController();
+  var diagnosis = TextEditingController();
+  var treatment = TextEditingController();
+
+  DateTime? date = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+
     title = TextEditingController(text: widget.title);
 
     if (widget.symptoms != null) {
-      editPostController.symptoms = widget.symptoms!.cast<String>();
+      editPostController.symptoms.value =
+          widget.symptoms!.map((e) => e.toString()).toList();
     }
 
     if (widget.diagnosis != null) {
-      editPostController.diagnosis = widget.diagnosis!.cast<String>();
+      editPostController.diagnosis.value =
+          widget.diagnosis!.map((e) => e.toString()).toList();
     }
 
     if (widget.treatment != null) {
-      editPostController.treatment = widget.treatment!.cast<String>();
+      editPostController.treatment.value =
+          widget.treatment!.map((e) => e.toString()).toList();
     }
-    date = widget.date;
+
+    if (widget.records != null) {
+      editPostController.recordUrls =
+          widget.records!.map((e) => e.toString()).toList();
+    }
+
+    var day = widget.date.split("/").first;
+    var year = widget.date.split("/").last;
+    var month = widget.date.split("/")[1];
+
+    if (month.length == 1) month = "0$month";
+
+    date = DateTime.parse("$year-$month-$day");
   }
 
-  final DateTime initialDate = DateTime.now();
+  Future<void> updateRecord() async {
+    if (title.text.isEmpty || date == null) {
+      Get.snackbar("Failure", "Please fill the title");
+      return;
+    }
+    Get.back();
+    if (editPostController.records.isNotEmpty) {
+      await editPostController.records.map(
+        (element) async {
+          PresignModel response;
+          try {
+            response = await prsignController.getUploadPresignedUrl(
+                profileController.profile!.data!.username!,
+                element.path.split("/").last);
+
+            await prsignController.uploadFileToS3(response.url!, element);
+
+            response = await prsignController.getDownloadPresignedUrl(
+                profileController.profile!.data!.username!,
+                element.path.split("/").last);
+
+            editPostController.recordUrls.add(response.url!);
+            print(editPostController.recordUrls);
+          } catch (e) {
+            Get.snackbar("Failure", "Failed to upload file. try again later");
+          }
+        },
+      ).wait;
+    }
+    await post.saveReport(
+        title.text,
+        "${date!.day}/${date!.month}/${date!.year}",
+        editPostController.symptoms,
+        editPostController.diagnosis,
+        editPostController.treatment,
+        editPostController.recordUrls,
+        profileController.profile!.data!.id!);
+
+    await profileController.getProfile(FirebaseAuth.instance.currentUser!.uid!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +228,7 @@ class _EditRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.symptoms)
+                  for (var i in editPostController.symptoms.value)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -190,7 +256,7 @@ class _EditRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.symptoms.remove(i);
+                              editPostController.symptoms.value.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -209,7 +275,7 @@ class _EditRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.symptoms.isEmpty)
+                  if (!editPostController.symptoms.value.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -227,7 +293,7 @@ class _EditRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.symptoms.add(symptoms.text);
+                          editPostController.symptoms.value.add(symptoms.text);
                           symptoms.clear();
                         },
                         child: Container(
@@ -257,7 +323,7 @@ class _EditRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.diagnosis)
+                  for (var i in editPostController.diagnosis.value)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -285,7 +351,7 @@ class _EditRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.diagnosis.remove(i);
+                              editPostController.diagnosis.value.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -304,7 +370,7 @@ class _EditRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.diagnosis.isEmpty)
+                  if (!editPostController.diagnosis.value.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -322,7 +388,8 @@ class _EditRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.diagnosis.add(diagnosis.text);
+                          editPostController.diagnosis.value
+                              .add(diagnosis.text);
                           diagnosis.clear();
                         },
                         child: Container(
@@ -352,7 +419,7 @@ class _EditRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.treatment)
+                  for (var i in editPostController.treatment.value)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -380,7 +447,7 @@ class _EditRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.treatment.remove(i);
+                              editPostController.treatment.value.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -399,7 +466,7 @@ class _EditRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.treatment.isEmpty)
+                  if (!editPostController.treatment.value.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -417,7 +484,8 @@ class _EditRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.treatment.add(treatment.text);
+                          editPostController.treatment.value
+                              .add(treatment.text);
                           treatment.clear();
                         },
                         child: Container(
@@ -519,7 +587,7 @@ class _EditRecordState extends State<EditRecord> {
                   OutlinedButton(
                     onPressed: () async {
                       // await savePost();
-                      Get.back();
+                      // Get.back();
                     },
                     style: ButtonStyle(
                       backgroundColor:

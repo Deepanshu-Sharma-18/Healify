@@ -105,9 +105,20 @@ model Record {
     symptoms    String[]
     diagnosis   String[]
     treatment   String[]
-    reports     String[]
-    user        User     @relation(fields: [userId], references: [id])
+    reports     File[]
+    user        User    @relation(fields: [userId], references: [id])
     userId    String    @db.ObjectId
+}
+
+
+model File {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId    
+  bucketName String    
+  objectKey  String            
+  content    String            
+  username   String       
+  record    Record    @relation(fields: [recordId], references: [id])
+  recordId   String    @db.ObjectId
 }`
 const schemaDatasourceURL = ""
 const schemaEnvVarName = "DATABASE_URL"
@@ -181,6 +192,7 @@ func newClient() *PrismaClient {
 	c := &PrismaClient{}
 	c.User = userActions{client: c}
 	c.Record = recordActions{client: c}
+	c.File = fileActions{client: c}
 
 	c.Prisma = &PrismaActions{
 		Raw: &raw.Raw{Engine: c},
@@ -209,6 +221,8 @@ type PrismaClient struct {
 	User userActions
 	// Record provides access to CRUD methods.
 	Record recordActions
+	// File provides access to CRUD methods.
+	File fileActions
 }
 
 // --- template enums.gotpl ---
@@ -238,8 +252,18 @@ const (
 	RecordScalarFieldEnumSymptoms  RecordScalarFieldEnum = "symptoms"
 	RecordScalarFieldEnumDiagnosis RecordScalarFieldEnum = "diagnosis"
 	RecordScalarFieldEnumTreatment RecordScalarFieldEnum = "treatment"
-	RecordScalarFieldEnumReports   RecordScalarFieldEnum = "reports"
 	RecordScalarFieldEnumUserID    RecordScalarFieldEnum = "userId"
+)
+
+type FileScalarFieldEnum string
+
+const (
+	FileScalarFieldEnumID         FileScalarFieldEnum = "id"
+	FileScalarFieldEnumBucketName FileScalarFieldEnum = "bucketName"
+	FileScalarFieldEnumObjectKey  FileScalarFieldEnum = "objectKey"
+	FileScalarFieldEnumContent    FileScalarFieldEnum = "content"
+	FileScalarFieldEnumUsername   FileScalarFieldEnum = "username"
+	FileScalarFieldEnumRecordID   FileScalarFieldEnum = "recordId"
 )
 
 type SortOrder string
@@ -333,6 +357,22 @@ const recordFieldUser recordPrismaFields = "user"
 
 const recordFieldUserID recordPrismaFields = "userId"
 
+type filePrismaFields = prismaFields
+
+const fileFieldID filePrismaFields = "id"
+
+const fileFieldBucketName filePrismaFields = "bucketName"
+
+const fileFieldObjectKey filePrismaFields = "objectKey"
+
+const fileFieldContent filePrismaFields = "content"
+
+const fileFieldUsername filePrismaFields = "username"
+
+const fileFieldRecord filePrismaFields = "record"
+
+const fileFieldRecordID filePrismaFields = "recordId"
+
 // --- template mock.gotpl ---
 func NewMock() (*PrismaClient, *Mock, func(t *testing.T)) {
 	expectations := new([]mock.Expectation)
@@ -351,6 +391,10 @@ func NewMock() (*PrismaClient, *Mock, func(t *testing.T)) {
 		mock: m,
 	}
 
+	m.File = fileMock{
+		mock: m,
+	}
+
 	return pc, m, m.Ensure
 }
 
@@ -360,6 +404,8 @@ type Mock struct {
 	User userMock
 
 	Record recordMock
+
+	File fileMock
 }
 
 type userMock struct {
@@ -440,6 +486,48 @@ func (m *recordMockExec) ReturnsMany(v []RecordModel) {
 }
 
 func (m *recordMockExec) Errors(err error) {
+	*m.mock.Expectations = append(*m.mock.Expectations, mock.Expectation{
+		Query:   m.query,
+		WantErr: err,
+	})
+}
+
+type fileMock struct {
+	mock *Mock
+}
+
+type FileMockExpectParam interface {
+	ExtractQuery() builder.Query
+	fileModel()
+}
+
+func (m *fileMock) Expect(query FileMockExpectParam) *fileMockExec {
+	return &fileMockExec{
+		mock:  m.mock,
+		query: query.ExtractQuery(),
+	}
+}
+
+type fileMockExec struct {
+	mock  *Mock
+	query builder.Query
+}
+
+func (m *fileMockExec) Returns(v FileModel) {
+	*m.mock.Expectations = append(*m.mock.Expectations, mock.Expectation{
+		Query: m.query,
+		Want:  &v,
+	})
+}
+
+func (m *fileMockExec) ReturnsMany(v []FileModel) {
+	*m.mock.Expectations = append(*m.mock.Expectations, mock.Expectation{
+		Query: m.query,
+		Want:  &v,
+	})
+}
+
+func (m *fileMockExec) Errors(err error) {
 	*m.mock.Expectations = append(*m.mock.Expectations, mock.Expectation{
 		Query:   m.query,
 		WantErr: err,
@@ -545,7 +633,6 @@ type InnerRecord struct {
 	Symptoms  []string `json:"symptoms"`
 	Diagnosis []string `json:"diagnosis"`
 	Treatment []string `json:"treatment"`
-	Reports   []string `json:"reports"`
 	UserID    string   `json:"userId"`
 }
 
@@ -557,13 +644,20 @@ type RawRecordModel struct {
 	Symptoms  []RawString `json:"symptoms"`
 	Diagnosis []RawString `json:"diagnosis"`
 	Treatment []RawString `json:"treatment"`
-	Reports   []RawString `json:"reports"`
 	UserID    RawString   `json:"userId"`
 }
 
 // RelationsRecord holds the relation data separately
 type RelationsRecord struct {
-	User *UserModel `json:"user,omitempty"`
+	Reports []FileModel `json:"reports,omitempty"`
+	User    *UserModel  `json:"user,omitempty"`
+}
+
+func (r RecordModel) Reports() (value []FileModel) {
+	if r.RelationsRecord.Reports == nil {
+		panic("attempted to access reports but did not fetch it using the .With() syntax")
+	}
+	return r.RelationsRecord.Reports
 }
 
 func (r RecordModel) User() (value *UserModel) {
@@ -571,6 +665,44 @@ func (r RecordModel) User() (value *UserModel) {
 		panic("attempted to access user but did not fetch it using the .With() syntax")
 	}
 	return r.RelationsRecord.User
+}
+
+// FileModel represents the File model and is a wrapper for accessing fields and methods
+type FileModel struct {
+	InnerFile
+	RelationsFile
+}
+
+// InnerFile holds the actual data
+type InnerFile struct {
+	ID         string `json:"id"`
+	BucketName string `json:"bucketName"`
+	ObjectKey  string `json:"objectKey"`
+	Content    string `json:"content"`
+	Username   string `json:"username"`
+	RecordID   string `json:"recordId"`
+}
+
+// RawFileModel is a struct for File when used in raw queries
+type RawFileModel struct {
+	ID         RawString `json:"id"`
+	BucketName RawString `json:"bucketName"`
+	ObjectKey  RawString `json:"objectKey"`
+	Content    RawString `json:"content"`
+	Username   RawString `json:"username"`
+	RecordID   RawString `json:"recordId"`
+}
+
+// RelationsFile holds the relation data separately
+type RelationsFile struct {
+	Record *RecordModel `json:"record,omitempty"`
+}
+
+func (r FileModel) Record() (value *RecordModel) {
+	if r.RelationsFile.Record == nil {
+		panic("attempted to access record but did not fetch it using the .With() syntax")
+	}
+	return r.RelationsFile.Record
 }
 
 // --- template query.gotpl ---
@@ -4941,10 +5073,7 @@ type recordQuery struct {
 	// @required
 	Treatment recordQueryTreatmentString
 
-	// Reports
-	//
-	// @required
-	Reports recordQueryReportsString
+	Reports recordQueryReportsRelations
 
 	User recordQueryUserRelations
 
@@ -6608,189 +6737,174 @@ func (r recordQueryTreatmentString) Field() recordPrismaFields {
 }
 
 // base struct
-type recordQueryReportsString struct{}
+type recordQueryReportsFile struct{}
 
-// Set the required value of Reports
-func (r recordQueryReportsString) Set(value []string) recordSetParam {
+type recordQueryReportsRelations struct{}
 
-	if value == nil {
-		value = []string{}
+// Record -> Reports
+//
+// @relation
+// @required
+func (recordQueryReportsRelations) Some(
+	params ...FileWhereParam,
+) recordDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return recordDefaultParam{
+		data: builder.Field{
+			Name: "reports",
+			Fields: []builder.Field{
+				{
+					Name:   "some",
+					Fields: fields,
+				},
+			},
+		},
+	}
+}
+
+// Record -> Reports
+//
+// @relation
+// @required
+func (recordQueryReportsRelations) Every(
+	params ...FileWhereParam,
+) recordDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return recordDefaultParam{
+		data: builder.Field{
+			Name: "reports",
+			Fields: []builder.Field{
+				{
+					Name:   "every",
+					Fields: fields,
+				},
+			},
+		},
+	}
+}
+
+// Record -> Reports
+//
+// @relation
+// @required
+func (recordQueryReportsRelations) None(
+	params ...FileWhereParam,
+) recordDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return recordDefaultParam{
+		data: builder.Field{
+			Name: "reports",
+			Fields: []builder.Field{
+				{
+					Name:   "none",
+					Fields: fields,
+				},
+			},
+		},
+	}
+}
+
+func (recordQueryReportsRelations) Fetch(
+
+	params ...FileWhereParam,
+
+) recordToReportsFindMany {
+	var v recordToReportsFindMany
+
+	v.query.Operation = "query"
+	v.query.Method = "reports"
+	v.query.Outputs = fileOutput
+
+	var where []builder.Field
+	for _, q := range params {
+		if query := q.getQuery(); query.Operation != "" {
+			v.query.Outputs = append(v.query.Outputs, builder.Output{
+				Name:    query.Method,
+				Inputs:  query.Inputs,
+				Outputs: query.Outputs,
+			})
+		} else {
+			where = append(where, q.field())
+		}
+	}
+
+	if len(where) > 0 {
+		v.query.Inputs = append(v.query.Inputs, builder.Input{
+			Name:   "where",
+			Fields: where,
+		})
+	}
+
+	return v
+}
+
+func (r recordQueryReportsRelations) Link(
+	params ...FileWhereParam,
+) recordSetParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
 	}
 
 	return recordSetParam{
 		data: builder.Field{
 			Name: "reports",
 			Fields: []builder.Field{
-				builder.Field{
-					Name:  "set",
-					Value: value,
-				},
-			},
-		},
-	}
+				{
+					Name:   "connect",
+					Fields: builder.TransformEquals(fields),
 
-}
-
-// Set the optional value of Reports dynamically
-func (r recordQueryReportsString) SetIfPresent(value *[]String) recordSetParam {
-	if value == nil {
-		return recordSetParam{}
-	}
-
-	return r.Set(*value)
-}
-
-// Push the required value of Reports
-func (r recordQueryReportsString) Push(value []string) recordSetParam {
-	return recordSetParam{
-		data: builder.Field{
-			Name: "reports",
-			Fields: []builder.Field{
-				builder.Field{
-					Name:  "push",
-					Value: value,
+					List:     true,
+					WrapList: true,
 				},
 			},
 		},
 	}
 }
 
-func (r recordQueryReportsString) PushIfPresent(value []string) recordSetParam {
-	if value == nil {
-		return recordSetParam{}
+func (r recordQueryReportsRelations) Unlink(
+	params ...FileWhereParam,
+) recordSetParam {
+	var v recordSetParam
+
+	var fields []builder.Field
+	for _, q := range params {
+		fields = append(fields, q.field())
 	}
-	return r.Push(value)
-}
-
-func (r recordQueryReportsString) Equals(value []string) recordWithPrismaReportsEqualsParam {
-
-	if value == nil {
-		value = []string{}
-	}
-
-	return recordWithPrismaReportsEqualsParam{
+	v = recordSetParam{
 		data: builder.Field{
 			Name: "reports",
 			Fields: []builder.Field{
 				{
-					Name:  "equals",
-					Value: value,
+					Name:     "disconnect",
+					List:     true,
+					WrapList: true,
+					Fields:   builder.TransformEquals(fields),
 				},
 			},
 		},
 	}
+
+	return v
 }
 
-func (r recordQueryReportsString) EqualsIfPresent(value []string) recordWithPrismaReportsEqualsParam {
-	if value == nil {
-		return recordWithPrismaReportsEqualsParam{}
-	}
-	return r.Equals(value)
-}
-
-func (r recordQueryReportsString) Order(direction SortOrder) recordDefaultParam {
-	return recordDefaultParam{
-		data: builder.Field{
-			Name:  "reports",
-			Value: direction,
-		},
-	}
-}
-
-func (r recordQueryReportsString) Cursor(cursor string) recordCursorParam {
-	return recordCursorParam{
-		data: builder.Field{
-			Name:  "reports",
-			Value: cursor,
-		},
-	}
-}
-
-func (r recordQueryReportsString) Has(value string) recordDefaultParam {
-	return recordDefaultParam{
-		data: builder.Field{
-			Name: "reports",
-			Fields: []builder.Field{
-				{
-					Name:  "has",
-					Value: value,
-				},
-			},
-		},
-	}
-}
-
-func (r recordQueryReportsString) HasIfPresent(value *string) recordDefaultParam {
-	if value == nil {
-		return recordDefaultParam{}
-	}
-	return r.Has(*value)
-}
-
-func (r recordQueryReportsString) HasEvery(value []string) recordDefaultParam {
-	return recordDefaultParam{
-		data: builder.Field{
-			Name: "reports",
-			Fields: []builder.Field{
-				{
-					Name:  "hasEvery",
-					Value: value,
-				},
-			},
-		},
-	}
-}
-
-func (r recordQueryReportsString) HasEveryIfPresent(value []string) recordDefaultParam {
-	if value == nil {
-		return recordDefaultParam{}
-	}
-	return r.HasEvery(value)
-}
-
-func (r recordQueryReportsString) HasSome(value []string) recordDefaultParam {
-	return recordDefaultParam{
-		data: builder.Field{
-			Name: "reports",
-			Fields: []builder.Field{
-				{
-					Name:  "hasSome",
-					Value: value,
-				},
-			},
-		},
-	}
-}
-
-func (r recordQueryReportsString) HasSomeIfPresent(value []string) recordDefaultParam {
-	if value == nil {
-		return recordDefaultParam{}
-	}
-	return r.HasSome(value)
-}
-
-func (r recordQueryReportsString) IsEmpty(value bool) recordDefaultParam {
-	return recordDefaultParam{
-		data: builder.Field{
-			Name: "reports",
-			Fields: []builder.Field{
-				{
-					Name:  "isEmpty",
-					Value: value,
-				},
-			},
-		},
-	}
-}
-
-func (r recordQueryReportsString) IsEmptyIfPresent(value *bool) recordDefaultParam {
-	if value == nil {
-		return recordDefaultParam{}
-	}
-	return r.IsEmpty(*value)
-}
-
-func (r recordQueryReportsString) Field() recordPrismaFields {
+func (r recordQueryReportsFile) Field() recordPrismaFields {
 	return recordFieldReports
 }
 
@@ -7229,6 +7343,2266 @@ func (r recordQueryUserIDString) Field() recordPrismaFields {
 	return recordFieldUserID
 }
 
+// File acts as a namespaces to access query methods for the File model
+var File = fileQuery{}
+
+// fileQuery exposes query functions for the file model
+type fileQuery struct {
+
+	// ID
+	//
+	// @required
+	ID fileQueryIDString
+
+	// BucketName
+	//
+	// @required
+	BucketName fileQueryBucketNameString
+
+	// ObjectKey
+	//
+	// @required
+	ObjectKey fileQueryObjectKeyString
+
+	// Content
+	//
+	// @required
+	Content fileQueryContentString
+
+	// Username
+	//
+	// @required
+	Username fileQueryUsernameString
+
+	Record fileQueryRecordRelations
+
+	// RecordID
+	//
+	// @required
+	RecordID fileQueryRecordIDString
+}
+
+func (fileQuery) Not(params ...FileWhereParam) fileDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:     "NOT",
+			List:     true,
+			WrapList: true,
+			Fields:   fields,
+		},
+	}
+}
+
+func (fileQuery) Or(params ...FileWhereParam) fileDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:     "OR",
+			List:     true,
+			WrapList: true,
+			Fields:   fields,
+		},
+	}
+}
+
+func (fileQuery) And(params ...FileWhereParam) fileDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:     "AND",
+			List:     true,
+			WrapList: true,
+			Fields:   fields,
+		},
+	}
+}
+
+// base struct
+type fileQueryIDString struct{}
+
+// Set the required value of ID
+func (r fileQueryIDString) Set(value string) fileSetParam {
+
+	return fileSetParam{
+		data: builder.Field{
+			Name:  "id",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of ID dynamically
+func (r fileQueryIDString) SetIfPresent(value *String) fileSetParam {
+	if value == nil {
+		return fileSetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryIDString) Equals(value string) fileWithPrismaIDEqualsUniqueParam {
+
+	return fileWithPrismaIDEqualsUniqueParam{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) EqualsIfPresent(value *string) fileWithPrismaIDEqualsUniqueParam {
+	if value == nil {
+		return fileWithPrismaIDEqualsUniqueParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryIDString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "id",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryIDString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "id",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryIDString) In(value []string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) InIfPresent(value []string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryIDString) NotIn(value []string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) NotInIfPresent(value []string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryIDString) Lt(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) LtIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryIDString) Lte(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) LteIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryIDString) Gt(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) GtIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryIDString) Gte(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) GteIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryIDString) Contains(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) ContainsIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryIDString) StartsWith(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) StartsWithIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryIDString) EndsWith(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) EndsWithIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryIDString) Mode(value QueryMode) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) ModeIfPresent(value *QueryMode) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryIDString) Not(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryIDString) NotIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryIDString) HasPrefix(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryIDString) HasPrefixIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryIDString) HasSuffix(value string) fileParamUnique {
+	return fileParamUnique{
+		data: builder.Field{
+			Name: "id",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryIDString) HasSuffixIfPresent(value *string) fileParamUnique {
+	if value == nil {
+		return fileParamUnique{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryIDString) Field() filePrismaFields {
+	return fileFieldID
+}
+
+// base struct
+type fileQueryBucketNameString struct{}
+
+// Set the required value of BucketName
+func (r fileQueryBucketNameString) Set(value string) fileWithPrismaBucketNameSetParam {
+
+	return fileWithPrismaBucketNameSetParam{
+		data: builder.Field{
+			Name:  "bucketName",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of BucketName dynamically
+func (r fileQueryBucketNameString) SetIfPresent(value *String) fileWithPrismaBucketNameSetParam {
+	if value == nil {
+		return fileWithPrismaBucketNameSetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryBucketNameString) Equals(value string) fileWithPrismaBucketNameEqualsParam {
+
+	return fileWithPrismaBucketNameEqualsParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) EqualsIfPresent(value *string) fileWithPrismaBucketNameEqualsParam {
+	if value == nil {
+		return fileWithPrismaBucketNameEqualsParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryBucketNameString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "bucketName",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "bucketName",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) In(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) InIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryBucketNameString) NotIn(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) NotInIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryBucketNameString) Lt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) LtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryBucketNameString) Lte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) LteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryBucketNameString) Gt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) GtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryBucketNameString) Gte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) GteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryBucketNameString) Contains(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) ContainsIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryBucketNameString) StartsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) StartsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryBucketNameString) EndsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) EndsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryBucketNameString) Mode(value QueryMode) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) ModeIfPresent(value *QueryMode) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryBucketNameString) Not(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryBucketNameString) NotIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryBucketNameString) HasPrefix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryBucketNameString) HasPrefixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryBucketNameString) HasSuffix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "bucketName",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryBucketNameString) HasSuffixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryBucketNameString) Field() filePrismaFields {
+	return fileFieldBucketName
+}
+
+// base struct
+type fileQueryObjectKeyString struct{}
+
+// Set the required value of ObjectKey
+func (r fileQueryObjectKeyString) Set(value string) fileWithPrismaObjectKeySetParam {
+
+	return fileWithPrismaObjectKeySetParam{
+		data: builder.Field{
+			Name:  "objectKey",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of ObjectKey dynamically
+func (r fileQueryObjectKeyString) SetIfPresent(value *String) fileWithPrismaObjectKeySetParam {
+	if value == nil {
+		return fileWithPrismaObjectKeySetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryObjectKeyString) Equals(value string) fileWithPrismaObjectKeyEqualsParam {
+
+	return fileWithPrismaObjectKeyEqualsParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) EqualsIfPresent(value *string) fileWithPrismaObjectKeyEqualsParam {
+	if value == nil {
+		return fileWithPrismaObjectKeyEqualsParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryObjectKeyString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "objectKey",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "objectKey",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) In(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) InIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryObjectKeyString) NotIn(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) NotInIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryObjectKeyString) Lt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) LtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryObjectKeyString) Lte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) LteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryObjectKeyString) Gt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) GtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryObjectKeyString) Gte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) GteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryObjectKeyString) Contains(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) ContainsIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryObjectKeyString) StartsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) StartsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryObjectKeyString) EndsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) EndsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryObjectKeyString) Mode(value QueryMode) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) ModeIfPresent(value *QueryMode) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryObjectKeyString) Not(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryObjectKeyString) NotIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryObjectKeyString) HasPrefix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryObjectKeyString) HasPrefixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryObjectKeyString) HasSuffix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "objectKey",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryObjectKeyString) HasSuffixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryObjectKeyString) Field() filePrismaFields {
+	return fileFieldObjectKey
+}
+
+// base struct
+type fileQueryContentString struct{}
+
+// Set the required value of Content
+func (r fileQueryContentString) Set(value string) fileWithPrismaContentSetParam {
+
+	return fileWithPrismaContentSetParam{
+		data: builder.Field{
+			Name:  "content",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of Content dynamically
+func (r fileQueryContentString) SetIfPresent(value *String) fileWithPrismaContentSetParam {
+	if value == nil {
+		return fileWithPrismaContentSetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryContentString) Equals(value string) fileWithPrismaContentEqualsParam {
+
+	return fileWithPrismaContentEqualsParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) EqualsIfPresent(value *string) fileWithPrismaContentEqualsParam {
+	if value == nil {
+		return fileWithPrismaContentEqualsParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryContentString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "content",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryContentString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "content",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryContentString) In(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) InIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryContentString) NotIn(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) NotInIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryContentString) Lt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) LtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryContentString) Lte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) LteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryContentString) Gt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) GtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryContentString) Gte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) GteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryContentString) Contains(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) ContainsIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryContentString) StartsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) StartsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryContentString) EndsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) EndsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryContentString) Mode(value QueryMode) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) ModeIfPresent(value *QueryMode) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryContentString) Not(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryContentString) NotIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryContentString) HasPrefix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryContentString) HasPrefixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryContentString) HasSuffix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "content",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryContentString) HasSuffixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryContentString) Field() filePrismaFields {
+	return fileFieldContent
+}
+
+// base struct
+type fileQueryUsernameString struct{}
+
+// Set the required value of Username
+func (r fileQueryUsernameString) Set(value string) fileWithPrismaUsernameSetParam {
+
+	return fileWithPrismaUsernameSetParam{
+		data: builder.Field{
+			Name:  "username",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of Username dynamically
+func (r fileQueryUsernameString) SetIfPresent(value *String) fileWithPrismaUsernameSetParam {
+	if value == nil {
+		return fileWithPrismaUsernameSetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryUsernameString) Equals(value string) fileWithPrismaUsernameEqualsParam {
+
+	return fileWithPrismaUsernameEqualsParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) EqualsIfPresent(value *string) fileWithPrismaUsernameEqualsParam {
+	if value == nil {
+		return fileWithPrismaUsernameEqualsParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryUsernameString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "username",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryUsernameString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "username",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryUsernameString) In(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) InIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryUsernameString) NotIn(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) NotInIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryUsernameString) Lt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) LtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryUsernameString) Lte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) LteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryUsernameString) Gt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) GtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryUsernameString) Gte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) GteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryUsernameString) Contains(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) ContainsIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryUsernameString) StartsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) StartsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryUsernameString) EndsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) EndsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryUsernameString) Mode(value QueryMode) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) ModeIfPresent(value *QueryMode) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryUsernameString) Not(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryUsernameString) NotIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryUsernameString) HasPrefix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryUsernameString) HasPrefixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryUsernameString) HasSuffix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "username",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryUsernameString) HasSuffixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryUsernameString) Field() filePrismaFields {
+	return fileFieldUsername
+}
+
+// base struct
+type fileQueryRecordRecord struct{}
+
+type fileQueryRecordRelations struct{}
+
+// File -> Record
+//
+// @relation
+// @required
+func (fileQueryRecordRelations) Where(
+	params ...RecordWhereParam,
+) fileDefaultParam {
+	var fields []builder.Field
+
+	for _, q := range params {
+		fields = append(fields, q.field())
+	}
+
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "record",
+			Fields: []builder.Field{
+				{
+					Name:   "is",
+					Fields: fields,
+				},
+			},
+		},
+	}
+}
+
+func (fileQueryRecordRelations) Fetch() fileToRecordFindUnique {
+	var v fileToRecordFindUnique
+
+	v.query.Operation = "query"
+	v.query.Method = "record"
+	v.query.Outputs = recordOutput
+
+	return v
+}
+
+func (r fileQueryRecordRelations) Link(
+	params RecordWhereParam,
+) fileWithPrismaRecordSetParam {
+	var fields []builder.Field
+
+	f := params.field()
+	if f.Fields == nil && f.Value == nil {
+		return fileWithPrismaRecordSetParam{}
+	}
+
+	fields = append(fields, f)
+
+	return fileWithPrismaRecordSetParam{
+		data: builder.Field{
+			Name: "record",
+			Fields: []builder.Field{
+				{
+					Name:   "connect",
+					Fields: builder.TransformEquals(fields),
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordRelations) Unlink() fileWithPrismaRecordSetParam {
+	var v fileWithPrismaRecordSetParam
+
+	v = fileWithPrismaRecordSetParam{
+		data: builder.Field{
+			Name: "record",
+			Fields: []builder.Field{
+				{
+					Name:  "disconnect",
+					Value: true,
+				},
+			},
+		},
+	}
+
+	return v
+}
+
+func (r fileQueryRecordRecord) Field() filePrismaFields {
+	return fileFieldRecord
+}
+
+// base struct
+type fileQueryRecordIDString struct{}
+
+// Set the required value of RecordID
+func (r fileQueryRecordIDString) Set(value string) fileSetParam {
+
+	return fileSetParam{
+		data: builder.Field{
+			Name:  "recordId",
+			Value: value,
+		},
+	}
+
+}
+
+// Set the optional value of RecordID dynamically
+func (r fileQueryRecordIDString) SetIfPresent(value *String) fileSetParam {
+	if value == nil {
+		return fileSetParam{}
+	}
+
+	return r.Set(*value)
+}
+
+func (r fileQueryRecordIDString) Equals(value string) fileWithPrismaRecordIDEqualsParam {
+
+	return fileWithPrismaRecordIDEqualsParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "equals",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) EqualsIfPresent(value *string) fileWithPrismaRecordIDEqualsParam {
+	if value == nil {
+		return fileWithPrismaRecordIDEqualsParam{}
+	}
+	return r.Equals(*value)
+}
+
+func (r fileQueryRecordIDString) Order(direction SortOrder) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name:  "recordId",
+			Value: direction,
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) Cursor(cursor string) fileCursorParam {
+	return fileCursorParam{
+		data: builder.Field{
+			Name:  "recordId",
+			Value: cursor,
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) In(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "in",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) InIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.In(value)
+}
+
+func (r fileQueryRecordIDString) NotIn(value []string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "notIn",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) NotInIfPresent(value []string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.NotIn(value)
+}
+
+func (r fileQueryRecordIDString) Lt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "lt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) LtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lt(*value)
+}
+
+func (r fileQueryRecordIDString) Lte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "lte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) LteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Lte(*value)
+}
+
+func (r fileQueryRecordIDString) Gt(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "gt",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) GtIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gt(*value)
+}
+
+func (r fileQueryRecordIDString) Gte(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "gte",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) GteIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Gte(*value)
+}
+
+func (r fileQueryRecordIDString) Contains(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "contains",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) ContainsIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Contains(*value)
+}
+
+func (r fileQueryRecordIDString) StartsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "startsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) StartsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.StartsWith(*value)
+}
+
+func (r fileQueryRecordIDString) EndsWith(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "endsWith",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) EndsWithIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.EndsWith(*value)
+}
+
+func (r fileQueryRecordIDString) Mode(value QueryMode) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "mode",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) ModeIfPresent(value *QueryMode) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Mode(*value)
+}
+
+func (r fileQueryRecordIDString) Not(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "not",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+func (r fileQueryRecordIDString) NotIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.Not(*value)
+}
+
+// deprecated: Use StartsWith instead.
+
+func (r fileQueryRecordIDString) HasPrefix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "starts_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use StartsWithIfPresent instead.
+func (r fileQueryRecordIDString) HasPrefixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasPrefix(*value)
+}
+
+// deprecated: Use EndsWith instead.
+
+func (r fileQueryRecordIDString) HasSuffix(value string) fileDefaultParam {
+	return fileDefaultParam{
+		data: builder.Field{
+			Name: "recordId",
+			Fields: []builder.Field{
+				{
+					Name:  "ends_with",
+					Value: value,
+				},
+			},
+		},
+	}
+}
+
+// deprecated: Use EndsWithIfPresent instead.
+func (r fileQueryRecordIDString) HasSuffixIfPresent(value *string) fileDefaultParam {
+	if value == nil {
+		return fileDefaultParam{}
+	}
+	return r.HasSuffix(*value)
+}
+
+func (r fileQueryRecordIDString) Field() filePrismaFields {
+	return fileFieldRecordID
+}
+
 // --- template actions.gotpl ---
 var countOutput = []builder.Output{
 	{Name: "count"},
@@ -7407,16 +9781,6 @@ type UserSetParam interface {
 
 type userSetParam struct {
 	data builder.Field
-}
-
-// authIDField implements UserWithPrismaAuthIDSetParam.
-func (p userSetParam) authIDField() {
-	panic("unimplemented")
-}
-
-// getQuery implements UserWithPrismaAuthIDSetParam.
-func (p userSetParam) getQuery() builder.Query {
-	panic("unimplemented")
 }
 
 func (userSetParam) settable() {}
@@ -8375,7 +10739,6 @@ var recordOutput = []builder.Output{
 	{Name: "symptoms"},
 	{Name: "diagnosis"},
 	{Name: "treatment"},
-	{Name: "reports"},
 	{Name: "userId"},
 }
 
@@ -9245,6 +11608,730 @@ func (p recordWithPrismaUserIDEqualsUniqueParam) userIDField() {}
 func (recordWithPrismaUserIDEqualsUniqueParam) unique() {}
 func (recordWithPrismaUserIDEqualsUniqueParam) equals() {}
 
+type fileActions struct {
+	// client holds the prisma client
+	client *PrismaClient
+}
+
+var fileOutput = []builder.Output{
+	{Name: "id"},
+	{Name: "bucketName"},
+	{Name: "objectKey"},
+	{Name: "content"},
+	{Name: "username"},
+	{Name: "recordId"},
+}
+
+type FileRelationWith interface {
+	getQuery() builder.Query
+	with()
+	fileRelation()
+}
+
+type FileWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+}
+
+type fileDefaultParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileDefaultParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileDefaultParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileDefaultParam) fileModel() {}
+
+type FileOrderByParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+}
+
+type fileOrderByParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileOrderByParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileOrderByParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileOrderByParam) fileModel() {}
+
+type FileCursorParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	isCursor()
+}
+
+type fileCursorParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileCursorParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileCursorParam) isCursor() {}
+
+func (p fileCursorParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileCursorParam) fileModel() {}
+
+type FileParamUnique interface {
+	field() builder.Field
+	getQuery() builder.Query
+	unique()
+	fileModel()
+}
+
+type fileParamUnique struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileParamUnique) fileModel() {}
+
+func (fileParamUnique) unique() {}
+
+func (p fileParamUnique) field() builder.Field {
+	return p.data
+}
+
+func (p fileParamUnique) getQuery() builder.Query {
+	return p.query
+}
+
+type FileEqualsWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+}
+
+type fileEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileEqualsParam) fileModel() {}
+
+func (fileEqualsParam) equals() {}
+
+func (p fileEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+type FileEqualsUniqueWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	unique()
+	fileModel()
+}
+
+type fileEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileEqualsUniqueParam) fileModel() {}
+
+func (fileEqualsUniqueParam) unique() {}
+func (fileEqualsUniqueParam) equals() {}
+
+func (p fileEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+type FileSetParam interface {
+	field() builder.Field
+	settable()
+	fileModel()
+}
+
+type fileSetParam struct {
+	data builder.Field
+}
+
+func (fileSetParam) settable() {}
+
+func (p fileSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileSetParam) fileModel() {}
+
+type FileWithPrismaIDEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	idField()
+}
+
+type FileWithPrismaIDSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	idField()
+}
+
+type fileWithPrismaIDSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaIDSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaIDSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaIDSetParam) fileModel() {}
+
+func (p fileWithPrismaIDSetParam) idField() {}
+
+type FileWithPrismaIDWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	idField()
+}
+
+type fileWithPrismaIDEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaIDEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaIDEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaIDEqualsParam) fileModel() {}
+
+func (p fileWithPrismaIDEqualsParam) idField() {}
+
+func (fileWithPrismaIDSetParam) settable()  {}
+func (fileWithPrismaIDEqualsParam) equals() {}
+
+type fileWithPrismaIDEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaIDEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaIDEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaIDEqualsUniqueParam) fileModel() {}
+func (p fileWithPrismaIDEqualsUniqueParam) idField()   {}
+
+func (fileWithPrismaIDEqualsUniqueParam) unique() {}
+func (fileWithPrismaIDEqualsUniqueParam) equals() {}
+
+type FileWithPrismaBucketNameEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	bucketNameField()
+}
+
+type FileWithPrismaBucketNameSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	bucketNameField()
+}
+
+type fileWithPrismaBucketNameSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaBucketNameSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaBucketNameSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaBucketNameSetParam) fileModel() {}
+
+func (p fileWithPrismaBucketNameSetParam) bucketNameField() {}
+
+type FileWithPrismaBucketNameWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	bucketNameField()
+}
+
+type fileWithPrismaBucketNameEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaBucketNameEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaBucketNameEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaBucketNameEqualsParam) fileModel() {}
+
+func (p fileWithPrismaBucketNameEqualsParam) bucketNameField() {}
+
+func (fileWithPrismaBucketNameSetParam) settable()  {}
+func (fileWithPrismaBucketNameEqualsParam) equals() {}
+
+type fileWithPrismaBucketNameEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaBucketNameEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaBucketNameEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaBucketNameEqualsUniqueParam) fileModel()       {}
+func (p fileWithPrismaBucketNameEqualsUniqueParam) bucketNameField() {}
+
+func (fileWithPrismaBucketNameEqualsUniqueParam) unique() {}
+func (fileWithPrismaBucketNameEqualsUniqueParam) equals() {}
+
+type FileWithPrismaObjectKeyEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	objectKeyField()
+}
+
+type FileWithPrismaObjectKeySetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	objectKeyField()
+}
+
+type fileWithPrismaObjectKeySetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaObjectKeySetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaObjectKeySetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaObjectKeySetParam) fileModel() {}
+
+func (p fileWithPrismaObjectKeySetParam) objectKeyField() {}
+
+type FileWithPrismaObjectKeyWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	objectKeyField()
+}
+
+type fileWithPrismaObjectKeyEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaObjectKeyEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaObjectKeyEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaObjectKeyEqualsParam) fileModel() {}
+
+func (p fileWithPrismaObjectKeyEqualsParam) objectKeyField() {}
+
+func (fileWithPrismaObjectKeySetParam) settable()  {}
+func (fileWithPrismaObjectKeyEqualsParam) equals() {}
+
+type fileWithPrismaObjectKeyEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaObjectKeyEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaObjectKeyEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaObjectKeyEqualsUniqueParam) fileModel()      {}
+func (p fileWithPrismaObjectKeyEqualsUniqueParam) objectKeyField() {}
+
+func (fileWithPrismaObjectKeyEqualsUniqueParam) unique() {}
+func (fileWithPrismaObjectKeyEqualsUniqueParam) equals() {}
+
+type FileWithPrismaContentEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	contentField()
+}
+
+type FileWithPrismaContentSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	contentField()
+}
+
+type fileWithPrismaContentSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaContentSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaContentSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaContentSetParam) fileModel() {}
+
+func (p fileWithPrismaContentSetParam) contentField() {}
+
+type FileWithPrismaContentWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	contentField()
+}
+
+type fileWithPrismaContentEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaContentEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaContentEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaContentEqualsParam) fileModel() {}
+
+func (p fileWithPrismaContentEqualsParam) contentField() {}
+
+func (fileWithPrismaContentSetParam) settable()  {}
+func (fileWithPrismaContentEqualsParam) equals() {}
+
+type fileWithPrismaContentEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaContentEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaContentEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaContentEqualsUniqueParam) fileModel()    {}
+func (p fileWithPrismaContentEqualsUniqueParam) contentField() {}
+
+func (fileWithPrismaContentEqualsUniqueParam) unique() {}
+func (fileWithPrismaContentEqualsUniqueParam) equals() {}
+
+type FileWithPrismaUsernameEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	usernameField()
+}
+
+type FileWithPrismaUsernameSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	usernameField()
+}
+
+type fileWithPrismaUsernameSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaUsernameSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaUsernameSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaUsernameSetParam) fileModel() {}
+
+func (p fileWithPrismaUsernameSetParam) usernameField() {}
+
+type FileWithPrismaUsernameWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	usernameField()
+}
+
+type fileWithPrismaUsernameEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaUsernameEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaUsernameEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaUsernameEqualsParam) fileModel() {}
+
+func (p fileWithPrismaUsernameEqualsParam) usernameField() {}
+
+func (fileWithPrismaUsernameSetParam) settable()  {}
+func (fileWithPrismaUsernameEqualsParam) equals() {}
+
+type fileWithPrismaUsernameEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaUsernameEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaUsernameEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaUsernameEqualsUniqueParam) fileModel()     {}
+func (p fileWithPrismaUsernameEqualsUniqueParam) usernameField() {}
+
+func (fileWithPrismaUsernameEqualsUniqueParam) unique() {}
+func (fileWithPrismaUsernameEqualsUniqueParam) equals() {}
+
+type FileWithPrismaRecordEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	recordField()
+}
+
+type FileWithPrismaRecordSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	recordField()
+}
+
+type fileWithPrismaRecordSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordSetParam) fileModel() {}
+
+func (p fileWithPrismaRecordSetParam) recordField() {}
+
+type FileWithPrismaRecordWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	recordField()
+}
+
+type fileWithPrismaRecordEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordEqualsParam) fileModel() {}
+
+func (p fileWithPrismaRecordEqualsParam) recordField() {}
+
+func (fileWithPrismaRecordSetParam) settable()  {}
+func (fileWithPrismaRecordEqualsParam) equals() {}
+
+type fileWithPrismaRecordEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordEqualsUniqueParam) fileModel()   {}
+func (p fileWithPrismaRecordEqualsUniqueParam) recordField() {}
+
+func (fileWithPrismaRecordEqualsUniqueParam) unique() {}
+func (fileWithPrismaRecordEqualsUniqueParam) equals() {}
+
+type FileWithPrismaRecordIDEqualsSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	equals()
+	fileModel()
+	recordIDField()
+}
+
+type FileWithPrismaRecordIDSetParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	recordIDField()
+}
+
+type fileWithPrismaRecordIDSetParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordIDSetParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordIDSetParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordIDSetParam) fileModel() {}
+
+func (p fileWithPrismaRecordIDSetParam) recordIDField() {}
+
+type FileWithPrismaRecordIDWhereParam interface {
+	field() builder.Field
+	getQuery() builder.Query
+	fileModel()
+	recordIDField()
+}
+
+type fileWithPrismaRecordIDEqualsParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordIDEqualsParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordIDEqualsParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordIDEqualsParam) fileModel() {}
+
+func (p fileWithPrismaRecordIDEqualsParam) recordIDField() {}
+
+func (fileWithPrismaRecordIDSetParam) settable()  {}
+func (fileWithPrismaRecordIDEqualsParam) equals() {}
+
+type fileWithPrismaRecordIDEqualsUniqueParam struct {
+	data  builder.Field
+	query builder.Query
+}
+
+func (p fileWithPrismaRecordIDEqualsUniqueParam) field() builder.Field {
+	return p.data
+}
+
+func (p fileWithPrismaRecordIDEqualsUniqueParam) getQuery() builder.Query {
+	return p.query
+}
+
+func (p fileWithPrismaRecordIDEqualsUniqueParam) fileModel()     {}
+func (p fileWithPrismaRecordIDEqualsUniqueParam) recordIDField() {}
+
+func (fileWithPrismaRecordIDEqualsUniqueParam) unique() {}
+func (fileWithPrismaRecordIDEqualsUniqueParam) equals() {}
+
 // --- template create.gotpl ---
 
 // Creates a single user.
@@ -9390,6 +12477,82 @@ func (r recordCreateOne) Exec(ctx context.Context) (*RecordModel, error) {
 
 func (r recordCreateOne) Tx() RecordUniqueTxResult {
 	v := newRecordUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+// Creates a single file.
+func (r fileActions) CreateOne(
+	_bucketName FileWithPrismaBucketNameSetParam,
+	_objectKey FileWithPrismaObjectKeySetParam,
+	_content FileWithPrismaContentSetParam,
+	_username FileWithPrismaUsernameSetParam,
+	_record FileWithPrismaRecordSetParam,
+
+	optional ...FileSetParam,
+) fileCreateOne {
+	var v fileCreateOne
+	v.query = builder.NewQuery()
+	v.query.Engine = r.client
+
+	v.query.Operation = "mutation"
+	v.query.Method = "createOne"
+	v.query.Model = "File"
+	v.query.Outputs = fileOutput
+
+	var fields []builder.Field
+
+	fields = append(fields, _bucketName.field())
+	fields = append(fields, _objectKey.field())
+	fields = append(fields, _content.field())
+	fields = append(fields, _username.field())
+	fields = append(fields, _record.field())
+
+	for _, q := range optional {
+		fields = append(fields, q.field())
+	}
+
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+func (r fileCreateOne) With(params ...FileRelationWith) fileCreateOne {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+type fileCreateOne struct {
+	query builder.Query
+}
+
+func (p fileCreateOne) ExtractQuery() builder.Query {
+	return p.query
+}
+
+func (p fileCreateOne) fileModel() {}
+
+func (r fileCreateOne) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileCreateOne) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
 	v.query = r.query
 	v.query.TxResult = make(chan []byte, 1)
 	return v
@@ -10403,6 +13566,461 @@ func (r userDeleteMany) Tx() UserManyTxResult {
 	return v
 }
 
+type recordToReportsFindUnique struct {
+	query builder.Query
+}
+
+func (r recordToReportsFindUnique) getQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindUnique) with()           {}
+func (r recordToReportsFindUnique) recordModel()    {}
+func (r recordToReportsFindUnique) recordRelation() {}
+
+func (r recordToReportsFindUnique) With(params ...FileRelationWith) recordToReportsFindUnique {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r recordToReportsFindUnique) Exec(ctx context.Context) (
+	*RecordModel,
+	error,
+) {
+	var v *RecordModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r recordToReportsFindUnique) ExecInner(ctx context.Context) (
+	*InnerRecord,
+	error,
+) {
+	var v *InnerRecord
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r recordToReportsFindUnique) Update(params ...RecordSetParam) recordToReportsUpdateUnique {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateOne"
+	r.query.Model = "Record"
+
+	var v recordToReportsUpdateUnique
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type recordToReportsUpdateUnique struct {
+	query builder.Query
+}
+
+func (r recordToReportsUpdateUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsUpdateUnique) recordModel() {}
+
+func (r recordToReportsUpdateUnique) Exec(ctx context.Context) (*RecordModel, error) {
+	var v RecordModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r recordToReportsUpdateUnique) Tx() RecordUniqueTxResult {
+	v := newRecordUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r recordToReportsFindUnique) Delete() recordToReportsDeleteUnique {
+	var v recordToReportsDeleteUnique
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteOne"
+	v.query.Model = "Record"
+
+	return v
+}
+
+type recordToReportsDeleteUnique struct {
+	query builder.Query
+}
+
+func (r recordToReportsDeleteUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p recordToReportsDeleteUnique) recordModel() {}
+
+func (r recordToReportsDeleteUnique) Exec(ctx context.Context) (*RecordModel, error) {
+	var v RecordModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r recordToReportsDeleteUnique) Tx() RecordUniqueTxResult {
+	v := newRecordUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+type recordToReportsFindFirst struct {
+	query builder.Query
+}
+
+func (r recordToReportsFindFirst) getQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindFirst) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindFirst) with()           {}
+func (r recordToReportsFindFirst) recordModel()    {}
+func (r recordToReportsFindFirst) recordRelation() {}
+
+func (r recordToReportsFindFirst) With(params ...FileRelationWith) recordToReportsFindFirst {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r recordToReportsFindFirst) OrderBy(params ...FileOrderByParam) recordToReportsFindFirst {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r recordToReportsFindFirst) Skip(count int) recordToReportsFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r recordToReportsFindFirst) Take(count int) recordToReportsFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r recordToReportsFindFirst) Cursor(cursor RecordCursorParam) recordToReportsFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r recordToReportsFindFirst) Exec(ctx context.Context) (
+	*RecordModel,
+	error,
+) {
+	var v *RecordModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r recordToReportsFindFirst) ExecInner(ctx context.Context) (
+	*InnerRecord,
+	error,
+) {
+	var v *InnerRecord
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+type recordToReportsFindMany struct {
+	query builder.Query
+}
+
+func (r recordToReportsFindMany) getQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsFindMany) with()           {}
+func (r recordToReportsFindMany) recordModel()    {}
+func (r recordToReportsFindMany) recordRelation() {}
+
+func (r recordToReportsFindMany) With(params ...FileRelationWith) recordToReportsFindMany {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r recordToReportsFindMany) OrderBy(params ...FileOrderByParam) recordToReportsFindMany {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r recordToReportsFindMany) Skip(count int) recordToReportsFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r recordToReportsFindMany) Take(count int) recordToReportsFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r recordToReportsFindMany) Cursor(cursor RecordCursorParam) recordToReportsFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r recordToReportsFindMany) Exec(ctx context.Context) (
+	[]RecordModel,
+	error,
+) {
+	var v []RecordModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r recordToReportsFindMany) ExecInner(ctx context.Context) (
+	[]InnerRecord,
+	error,
+) {
+	var v []InnerRecord
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r recordToReportsFindMany) Update(params ...RecordSetParam) recordToReportsUpdateMany {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateMany"
+	r.query.Model = "Record"
+
+	r.query.Outputs = countOutput
+
+	var v recordToReportsUpdateMany
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type recordToReportsUpdateMany struct {
+	query builder.Query
+}
+
+func (r recordToReportsUpdateMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r recordToReportsUpdateMany) recordModel() {}
+
+func (r recordToReportsUpdateMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r recordToReportsUpdateMany) Tx() RecordManyTxResult {
+	v := newRecordManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r recordToReportsFindMany) Delete() recordToReportsDeleteMany {
+	var v recordToReportsDeleteMany
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteMany"
+	v.query.Model = "Record"
+
+	v.query.Outputs = countOutput
+
+	return v
+}
+
+type recordToReportsDeleteMany struct {
+	query builder.Query
+}
+
+func (r recordToReportsDeleteMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p recordToReportsDeleteMany) recordModel() {}
+
+func (r recordToReportsDeleteMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r recordToReportsDeleteMany) Tx() RecordManyTxResult {
+	v := newRecordManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
 type recordToUserFindUnique struct {
 	query builder.Query
 }
@@ -11409,6 +15027,1012 @@ func (r recordDeleteMany) Tx() RecordManyTxResult {
 	return v
 }
 
+type fileToRecordFindUnique struct {
+	query builder.Query
+}
+
+func (r fileToRecordFindUnique) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindUnique) with()         {}
+func (r fileToRecordFindUnique) fileModel()    {}
+func (r fileToRecordFindUnique) fileRelation() {}
+
+func (r fileToRecordFindUnique) With(params ...RecordRelationWith) fileToRecordFindUnique {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileToRecordFindUnique) Exec(ctx context.Context) (
+	*FileModel,
+	error,
+) {
+	var v *FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileToRecordFindUnique) ExecInner(ctx context.Context) (
+	*InnerFile,
+	error,
+) {
+	var v *InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileToRecordFindUnique) Update(params ...FileSetParam) fileToRecordUpdateUnique {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateOne"
+	r.query.Model = "File"
+
+	var v fileToRecordUpdateUnique
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type fileToRecordUpdateUnique struct {
+	query builder.Query
+}
+
+func (r fileToRecordUpdateUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordUpdateUnique) fileModel() {}
+
+func (r fileToRecordUpdateUnique) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileToRecordUpdateUnique) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r fileToRecordFindUnique) Delete() fileToRecordDeleteUnique {
+	var v fileToRecordDeleteUnique
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteOne"
+	v.query.Model = "File"
+
+	return v
+}
+
+type fileToRecordDeleteUnique struct {
+	query builder.Query
+}
+
+func (r fileToRecordDeleteUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p fileToRecordDeleteUnique) fileModel() {}
+
+func (r fileToRecordDeleteUnique) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileToRecordDeleteUnique) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+type fileToRecordFindFirst struct {
+	query builder.Query
+}
+
+func (r fileToRecordFindFirst) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindFirst) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindFirst) with()         {}
+func (r fileToRecordFindFirst) fileModel()    {}
+func (r fileToRecordFindFirst) fileRelation() {}
+
+func (r fileToRecordFindFirst) With(params ...RecordRelationWith) fileToRecordFindFirst {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileToRecordFindFirst) OrderBy(params ...RecordOrderByParam) fileToRecordFindFirst {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r fileToRecordFindFirst) Skip(count int) fileToRecordFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileToRecordFindFirst) Take(count int) fileToRecordFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileToRecordFindFirst) Cursor(cursor FileCursorParam) fileToRecordFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r fileToRecordFindFirst) Exec(ctx context.Context) (
+	*FileModel,
+	error,
+) {
+	var v *FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileToRecordFindFirst) ExecInner(ctx context.Context) (
+	*InnerFile,
+	error,
+) {
+	var v *InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+type fileToRecordFindMany struct {
+	query builder.Query
+}
+
+func (r fileToRecordFindMany) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordFindMany) with()         {}
+func (r fileToRecordFindMany) fileModel()    {}
+func (r fileToRecordFindMany) fileRelation() {}
+
+func (r fileToRecordFindMany) With(params ...RecordRelationWith) fileToRecordFindMany {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileToRecordFindMany) OrderBy(params ...RecordOrderByParam) fileToRecordFindMany {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r fileToRecordFindMany) Skip(count int) fileToRecordFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileToRecordFindMany) Take(count int) fileToRecordFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileToRecordFindMany) Cursor(cursor FileCursorParam) fileToRecordFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r fileToRecordFindMany) Exec(ctx context.Context) (
+	[]FileModel,
+	error,
+) {
+	var v []FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r fileToRecordFindMany) ExecInner(ctx context.Context) (
+	[]InnerFile,
+	error,
+) {
+	var v []InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r fileToRecordFindMany) Update(params ...FileSetParam) fileToRecordUpdateMany {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateMany"
+	r.query.Model = "File"
+
+	r.query.Outputs = countOutput
+
+	var v fileToRecordUpdateMany
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type fileToRecordUpdateMany struct {
+	query builder.Query
+}
+
+func (r fileToRecordUpdateMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileToRecordUpdateMany) fileModel() {}
+
+func (r fileToRecordUpdateMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileToRecordUpdateMany) Tx() FileManyTxResult {
+	v := newFileManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r fileToRecordFindMany) Delete() fileToRecordDeleteMany {
+	var v fileToRecordDeleteMany
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteMany"
+	v.query.Model = "File"
+
+	v.query.Outputs = countOutput
+
+	return v
+}
+
+type fileToRecordDeleteMany struct {
+	query builder.Query
+}
+
+func (r fileToRecordDeleteMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p fileToRecordDeleteMany) fileModel() {}
+
+func (r fileToRecordDeleteMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileToRecordDeleteMany) Tx() FileManyTxResult {
+	v := newFileManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+type fileFindUnique struct {
+	query builder.Query
+}
+
+func (r fileFindUnique) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindUnique) with()         {}
+func (r fileFindUnique) fileModel()    {}
+func (r fileFindUnique) fileRelation() {}
+
+func (r fileActions) FindUnique(
+	params FileEqualsUniqueWhereParam,
+) fileFindUnique {
+	var v fileFindUnique
+	v.query = builder.NewQuery()
+	v.query.Engine = r.client
+
+	v.query.Operation = "query"
+
+	v.query.Method = "findUnique"
+
+	v.query.Model = "File"
+	v.query.Outputs = fileOutput
+
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "where",
+		Fields: builder.TransformEquals([]builder.Field{params.field()}),
+	})
+
+	return v
+}
+
+func (r fileFindUnique) With(params ...FileRelationWith) fileFindUnique {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileFindUnique) Exec(ctx context.Context) (
+	*FileModel,
+	error,
+) {
+	var v *FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileFindUnique) ExecInner(ctx context.Context) (
+	*InnerFile,
+	error,
+) {
+	var v *InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileFindUnique) Update(params ...FileSetParam) fileUpdateUnique {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateOne"
+	r.query.Model = "File"
+
+	var v fileUpdateUnique
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type fileUpdateUnique struct {
+	query builder.Query
+}
+
+func (r fileUpdateUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileUpdateUnique) fileModel() {}
+
+func (r fileUpdateUnique) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileUpdateUnique) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r fileFindUnique) Delete() fileDeleteUnique {
+	var v fileDeleteUnique
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteOne"
+	v.query.Model = "File"
+
+	return v
+}
+
+type fileDeleteUnique struct {
+	query builder.Query
+}
+
+func (r fileDeleteUnique) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p fileDeleteUnique) fileModel() {}
+
+func (r fileDeleteUnique) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileDeleteUnique) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+type fileFindFirst struct {
+	query builder.Query
+}
+
+func (r fileFindFirst) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindFirst) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindFirst) with()         {}
+func (r fileFindFirst) fileModel()    {}
+func (r fileFindFirst) fileRelation() {}
+
+func (r fileActions) FindFirst(
+	params ...FileWhereParam,
+) fileFindFirst {
+	var v fileFindFirst
+	v.query = builder.NewQuery()
+	v.query.Engine = r.client
+
+	v.query.Operation = "query"
+
+	v.query.Method = "findFirst"
+
+	v.query.Model = "File"
+	v.query.Outputs = fileOutput
+
+	var where []builder.Field
+	for _, q := range params {
+		if query := q.getQuery(); query.Operation != "" {
+			v.query.Outputs = append(v.query.Outputs, builder.Output{
+				Name:    query.Method,
+				Inputs:  query.Inputs,
+				Outputs: query.Outputs,
+			})
+		} else {
+			where = append(where, q.field())
+		}
+	}
+
+	if len(where) > 0 {
+		v.query.Inputs = append(v.query.Inputs, builder.Input{
+			Name:   "where",
+			Fields: where,
+		})
+	}
+
+	return v
+}
+
+func (r fileFindFirst) With(params ...FileRelationWith) fileFindFirst {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileFindFirst) OrderBy(params ...FileOrderByParam) fileFindFirst {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r fileFindFirst) Skip(count int) fileFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileFindFirst) Take(count int) fileFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileFindFirst) Cursor(cursor FileCursorParam) fileFindFirst {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r fileFindFirst) Exec(ctx context.Context) (
+	*FileModel,
+	error,
+) {
+	var v *FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+func (r fileFindFirst) ExecInner(ctx context.Context) (
+	*InnerFile,
+	error,
+) {
+	var v *InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		return nil, ErrNotFound
+	}
+
+	return v, nil
+}
+
+type fileFindMany struct {
+	query builder.Query
+}
+
+func (r fileFindMany) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileFindMany) with()         {}
+func (r fileFindMany) fileModel()    {}
+func (r fileFindMany) fileRelation() {}
+
+func (r fileActions) FindMany(
+	params ...FileWhereParam,
+) fileFindMany {
+	var v fileFindMany
+	v.query = builder.NewQuery()
+	v.query.Engine = r.client
+
+	v.query.Operation = "query"
+
+	v.query.Method = "findMany"
+
+	v.query.Model = "File"
+	v.query.Outputs = fileOutput
+
+	var where []builder.Field
+	for _, q := range params {
+		if query := q.getQuery(); query.Operation != "" {
+			v.query.Outputs = append(v.query.Outputs, builder.Output{
+				Name:    query.Method,
+				Inputs:  query.Inputs,
+				Outputs: query.Outputs,
+			})
+		} else {
+			where = append(where, q.field())
+		}
+	}
+
+	if len(where) > 0 {
+		v.query.Inputs = append(v.query.Inputs, builder.Input{
+			Name:   "where",
+			Fields: where,
+		})
+	}
+
+	return v
+}
+
+func (r fileFindMany) With(params ...FileRelationWith) fileFindMany {
+	for _, q := range params {
+		query := q.getQuery()
+		r.query.Outputs = append(r.query.Outputs, builder.Output{
+			Name:    query.Method,
+			Inputs:  query.Inputs,
+			Outputs: query.Outputs,
+		})
+	}
+
+	return r
+}
+
+func (r fileFindMany) OrderBy(params ...FileOrderByParam) fileFindMany {
+	var fields []builder.Field
+
+	for _, param := range params {
+		fields = append(fields, builder.Field{
+			Name:   param.field().Name,
+			Value:  param.field().Value,
+			Fields: param.field().Fields,
+		})
+	}
+
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:     "orderBy",
+		Fields:   fields,
+		WrapList: true,
+	})
+
+	return r
+}
+
+func (r fileFindMany) Skip(count int) fileFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "skip",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileFindMany) Take(count int) fileFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:  "take",
+		Value: count,
+	})
+	return r
+}
+
+func (r fileFindMany) Cursor(cursor FileCursorParam) fileFindMany {
+	r.query.Inputs = append(r.query.Inputs, builder.Input{
+		Name:   "cursor",
+		Fields: []builder.Field{cursor.field()},
+	})
+	return r
+}
+
+func (r fileFindMany) Exec(ctx context.Context) (
+	[]FileModel,
+	error,
+) {
+	var v []FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r fileFindMany) ExecInner(ctx context.Context) (
+	[]InnerFile,
+	error,
+) {
+	var v []InnerFile
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (r fileFindMany) Update(params ...FileSetParam) fileUpdateMany {
+	r.query.Operation = "mutation"
+	r.query.Method = "updateMany"
+	r.query.Model = "File"
+
+	r.query.Outputs = countOutput
+
+	var v fileUpdateMany
+	v.query = r.query
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "data",
+		Fields: fields,
+	})
+	return v
+}
+
+type fileUpdateMany struct {
+	query builder.Query
+}
+
+func (r fileUpdateMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileUpdateMany) fileModel() {}
+
+func (r fileUpdateMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileUpdateMany) Tx() FileManyTxResult {
+	v := newFileManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+func (r fileFindMany) Delete() fileDeleteMany {
+	var v fileDeleteMany
+	v.query = r.query
+	v.query.Operation = "mutation"
+	v.query.Method = "deleteMany"
+	v.query.Model = "File"
+
+	v.query.Outputs = countOutput
+
+	return v
+}
+
+type fileDeleteMany struct {
+	query builder.Query
+}
+
+func (r fileDeleteMany) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (p fileDeleteMany) fileModel() {}
+
+func (r fileDeleteMany) Exec(ctx context.Context) (*BatchResult, error) {
+	var v BatchResult
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileDeleteMany) Tx() FileManyTxResult {
+	v := newFileManyTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
 // --- template transaction.gotpl ---
 
 func newUserUniqueTxResult() UserUniqueTxResult {
@@ -11501,6 +16125,54 @@ func (p RecordManyTxResult) ExtractQuery() builder.Query {
 func (p RecordManyTxResult) IsTx() {}
 
 func (r RecordManyTxResult) Result() (v *BatchResult) {
+	if err := r.result.Get(r.query.TxResult, &v); err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func newFileUniqueTxResult() FileUniqueTxResult {
+	return FileUniqueTxResult{
+		result: &transaction.Result{},
+	}
+}
+
+type FileUniqueTxResult struct {
+	query  builder.Query
+	result *transaction.Result
+}
+
+func (p FileUniqueTxResult) ExtractQuery() builder.Query {
+	return p.query
+}
+
+func (p FileUniqueTxResult) IsTx() {}
+
+func (r FileUniqueTxResult) Result() (v *FileModel) {
+	if err := r.result.Get(r.query.TxResult, &v); err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func newFileManyTxResult() FileManyTxResult {
+	return FileManyTxResult{
+		result: &transaction.Result{},
+	}
+}
+
+type FileManyTxResult struct {
+	query  builder.Query
+	result *transaction.Result
+}
+
+func (p FileManyTxResult) ExtractQuery() builder.Query {
+	return p.query
+}
+
+func (p FileManyTxResult) IsTx() {}
+
+func (r FileManyTxResult) Result() (v *BatchResult) {
 	if err := r.result.Get(r.query.TxResult, &v); err != nil {
 		panic(err)
 	}
@@ -11736,6 +16408,124 @@ func (r recordUpsertOne) Exec(ctx context.Context) (*RecordModel, error) {
 
 func (r recordUpsertOne) Tx() RecordUniqueTxResult {
 	v := newRecordUniqueTxResult()
+	v.query = r.query
+	v.query.TxResult = make(chan []byte, 1)
+	return v
+}
+
+type fileUpsertOne struct {
+	query builder.Query
+}
+
+func (r fileUpsertOne) getQuery() builder.Query {
+	return r.query
+}
+
+func (r fileUpsertOne) ExtractQuery() builder.Query {
+	return r.query
+}
+
+func (r fileUpsertOne) with()         {}
+func (r fileUpsertOne) fileModel()    {}
+func (r fileUpsertOne) fileRelation() {}
+
+func (r fileActions) UpsertOne(
+	params FileEqualsUniqueWhereParam,
+) fileUpsertOne {
+	var v fileUpsertOne
+	v.query = builder.NewQuery()
+	v.query.Engine = r.client
+
+	v.query.Operation = "mutation"
+	v.query.Method = "upsertOne"
+	v.query.Model = "File"
+	v.query.Outputs = fileOutput
+
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "where",
+		Fields: builder.TransformEquals([]builder.Field{params.field()}),
+	})
+
+	return v
+}
+
+func (r fileUpsertOne) Create(
+
+	_bucketName FileWithPrismaBucketNameSetParam,
+	_objectKey FileWithPrismaObjectKeySetParam,
+	_content FileWithPrismaContentSetParam,
+	_username FileWithPrismaUsernameSetParam,
+	_record FileWithPrismaRecordSetParam,
+
+	optional ...FileSetParam,
+) fileUpsertOne {
+	var v fileUpsertOne
+	v.query = r.query
+
+	var fields []builder.Field
+	fields = append(fields, _bucketName.field())
+	fields = append(fields, _objectKey.field())
+	fields = append(fields, _content.field())
+	fields = append(fields, _username.field())
+	fields = append(fields, _record.field())
+
+	for _, q := range optional {
+		fields = append(fields, q.field())
+	}
+
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "create",
+		Fields: fields,
+	})
+
+	return v
+}
+
+func (r fileUpsertOne) Update(
+	params ...FileSetParam,
+) fileUpsertOne {
+	var v fileUpsertOne
+	v.query = r.query
+
+	var fields []builder.Field
+	for _, q := range params {
+
+		field := q.field()
+
+		_, isJson := field.Value.(types.JSON)
+		if field.Value != nil && !isJson {
+			v := field.Value
+			field.Fields = []builder.Field{
+				{
+					Name:  "set",
+					Value: v,
+				},
+			}
+
+			field.Value = nil
+		}
+
+		fields = append(fields, field)
+	}
+
+	v.query.Inputs = append(v.query.Inputs, builder.Input{
+		Name:   "update",
+		Fields: fields,
+	})
+
+	return v
+}
+
+func (r fileUpsertOne) Exec(ctx context.Context) (*FileModel, error) {
+	var v FileModel
+	if err := r.query.Exec(ctx, &v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r fileUpsertOne) Tx() FileUniqueTxResult {
+	v := newFileUniqueTxResult()
 	v.query = r.query
 	v.query.TxResult = make(chan []byte, 1)
 	return v

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Deepanshu-sharma-18/healify-backend/db"
 	"github.com/Deepanshu-sharma-18/healify-backend/initializers"
+	"github.com/Deepanshu-sharma-18/healify-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,18 +18,7 @@ func UpdateRecord(c *gin.Context) {
 
 	defer cancel()
 
-	type Record struct {
-		Id        string   `bson:"id" json:"id" validate:"required"`
-		Title     string   `bson:"title" json:"title" validate:"required"`
-		Date      string   `bson:"date" json:"date" validate:"required"`
-		Symptoms  []string `bson:"symptoms" json:"symptoms" validate:"required"`
-		Diagnosis []string `bson:"diagnosis" json:"diagnosis" validate:"required"`
-		Treatment []string `bson:"treatment" json:"treatment" validate:"required"`
-		Reports   []string `bson:"reports" json:"reports" validate:"required"`
-		UserId    string   `bson:"userid" json:"userid" validate:"required"`
-	}
-
-	var record Record
+	var record models.Record
 
 	if err := c.BindJSON(&record); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -43,12 +33,30 @@ func UpdateRecord(c *gin.Context) {
 		db.Record.Symptoms.Set(record.Symptoms),
 		db.Record.Diagnosis.Set(record.Diagnosis),
 		db.Record.Treatment.Set(record.Treatment),
-		db.Record.Reports.Set(record.Reports),
 	).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	for i := 0; i < len(record.Reports); i++ {
+
+		_, err := initializers.Client.File.FindUnique(
+			db.File.ID.Equals(record.Reports[i].Id),
+		).Update(
+			db.File.BucketName.Set(record.Reports[i].BucketName),
+			db.File.ObjectKey.Set(record.Reports[i].ObjectKey),
+			db.File.Content.Set(record.Reports[i].Content),
+			db.File.Username.Set(record.Reports[i].Username),
+			db.File.Record.Link(db.Record.ID.Equals(record.UserId)),
+		).Exec(ctx)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 	}
 
 	result, _ := json.MarshalIndent(updateRecord, "", "  ")

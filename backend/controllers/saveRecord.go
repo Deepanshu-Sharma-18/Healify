@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	"time"
 
 	"github.com/Deepanshu-sharma-18/healify-backend/db"
@@ -21,9 +22,11 @@ func SaveRecord(c *gin.Context) {
 	var record models.Record
 
 	if err := c.BindJSON(&record); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error in binding": err.Error()})
 		return
 	}
+
+	fmt.Printf("record: %v\n", record)
 
 	createdRecord, err := initializers.Client.Record.CreateOne(
 		db.Record.Title.Set(record.Title),
@@ -32,12 +35,29 @@ func SaveRecord(c *gin.Context) {
 		db.Record.Symptoms.Set(record.Symptoms),
 		db.Record.Diagnosis.Set(record.Diagnosis),
 		db.Record.Treatment.Set(record.Treatment),
-		db.Record.Reports.Set(record.Reports),
 	).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	for i := 0; i < len(record.Reports); i++ {
+
+		_, err := initializers.Client.File.CreateOne(
+
+			db.File.BucketName.Set(record.Reports[i].BucketName),
+			db.File.ObjectKey.Set(record.Reports[i].ObjectKey),
+			db.File.Content.Set(record.Reports[i].Content),
+			db.File.Username.Set(record.Reports[i].Username),
+			db.File.Record.Link(db.Record.ID.Equals(createdRecord.ID)),
+		).Exec(ctx)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 	}
 
 	result, _ := json.MarshalIndent(createdRecord, "", "  ")

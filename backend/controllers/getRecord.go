@@ -29,7 +29,7 @@ func GetRecord(c *gin.Context) {
 
 	record, err := initializers.Client.Record.FindUnique(
 		db.Record.ID.Equals(documentId.DocumentId),
-	).Exec(ctx)
+	).With(db.Record.Reports.Fetch()).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

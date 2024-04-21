@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Deepanshu-sharma-18/healify-backend/initializers"
+	"github.com/Deepanshu-sharma-18/healify-backend/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
@@ -14,15 +15,7 @@ import (
 
 func GenerateUploadPresignedUrl(c *gin.Context) {
 
-	type File struct {
-		BucketName string            `json:"bucketname" validate:"required"`
-		ObjectKey  string            `json:"objectkey" validate:"required"`
-		Content    string            `json:"content" validate:"required"`
-		Username   string            `json:"username" validate:"required"`
-		Metadata   map[string]string `json:"metadata"`
-	}
-
-	var file File
+	var file models.File
 
 	if err := c.BindJSON(&file); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -51,14 +44,7 @@ func GenerateUploadPresignedUrl(c *gin.Context) {
 
 func GenerateDownloadPresignUrl(c *gin.Context) {
 
-	type File struct {
-		BucketName string `json:"bucketName" validate:"required"`
-		ObjectKey  string `json:"objectKey" validate:"required"`
-		Username   string `json:"username" validate:"required"`
-		Content    string `json:"content" validate:"required"`
-	}
-
-	var file File
+	var file models.File
 
 	if err := c.BindJSON(&file); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

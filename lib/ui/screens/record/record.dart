@@ -42,92 +42,94 @@ class _RecordScreenState extends State<RecordScreen> {
         height: double.maxFinite,
         width: double.maxFinite,
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              TopBar(),
-              const SizedBox(
-                height: 10,
-              ),
-              MyText(
-                fontsize: 30,
-                fontcolor: Colors.black,
-                fontweight: FontWeight.bold,
-                text: "Manage Records",
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  MyText(
-                    fontsize: 20,
-                    fontcolor: Colors.black,
-                    fontweight: FontWeight.bold,
-                    text: "Your Records",
-                  ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  MyText(
-                    fontsize: 13,
-                    fontcolor: Colors.black,
-                    fontweight: FontWeight.w500,
-                    text: "(" +
-                        profileController.profile!.data!.records!.length
-                            .toString()
-                            .removeAllWhitespace +
-                        ")",
-                  ),
-                ],
-              ),
-              profileController.profile!.data!.records!.length == 0
-                  ? Container(
-                      padding: EdgeInsets.symmetric(vertical: 50),
-                      child: Center(
-                        child: MyText(
-                          fontsize: 15,
-                          fontcolor: Colors.black,
-                          fontweight: FontWeight.w500,
-                          text: "No records found",
-                        ),
-                      ),
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: List.generate(
-                            profileController.profile!.data!.records!.length,
-                            (index) => RecordCard(
-                              id: profileController
-                                  .profile!.data!.records![index].id
-                                  .toString(),
-                              date: profileController
-                                  .profile!.data!.records![index].date
-                                  .toString(),
-                              title: profileController
-                                  .profile!.data!.records![index].title
-                                  .toString(),
-                              color: ColorTheme.grey,
-                            ),
+          child: Obx(
+            () => Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                TopBar(),
+                const SizedBox(
+                  height: 10,
+                ),
+                MyText(
+                  fontsize: 30,
+                  fontcolor: Colors.black,
+                  fontweight: FontWeight.bold,
+                  text: "Manage Records",
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    MyText(
+                      fontsize: 20,
+                      fontcolor: Colors.black,
+                      fontweight: FontWeight.bold,
+                      text: "Your Records",
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    MyText(
+                      fontsize: 13,
+                      fontcolor: Colors.black,
+                      fontweight: FontWeight.w500,
+                      text: "(" +
+                          profileController.profile!.data!.records!.length
+                              .toString()
+                              .removeAllWhitespace +
+                          ")",
+                    ),
+                  ],
+                ),
+                profileController.profile!.data!.records!.length == 0
+                    ? Container(
+                        padding: EdgeInsets.symmetric(vertical: 50),
+                        child: Center(
+                          child: MyText(
+                            fontsize: 15,
+                            fontcolor: Colors.black,
+                            fontweight: FontWeight.w500,
+                            text: "No records found",
                           ),
                         ),
-                      ],
-                    ),
-              const SizedBox(
-                height: 20,
-              ),
-            ],
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: List.generate(
+                              profileController.profile!.data!.records!.length,
+                              (index) => RecordCard(
+                                id: profileController
+                                    .profile!.data!.records![index].id
+                                    .toString(),
+                                date: profileController
+                                    .profile!.data!.records![index].date
+                                    .toString(),
+                                title: profileController
+                                    .profile!.data!.records![index].title
+                                    .toString(),
+                                color: ColorTheme.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
           ),
         ),
       )),

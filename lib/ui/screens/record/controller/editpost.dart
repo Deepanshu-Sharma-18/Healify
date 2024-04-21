@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 class EditPost extends GetxController {
-  List<String> symptoms = <String>[].obs;
-  List<String> diagnosis = <String>[].obs;
-  List<String> treatment = <String>[].obs;
-  List<File> records = <File>[].obs;
+  var symptoms = <String>[].obs;
+  var diagnosis = <String>[].obs;
+  var treatment = <String>[].obs;
+  var records = <File>[].obs;
 
   List<String> recordUrls = <String>[];
 }
