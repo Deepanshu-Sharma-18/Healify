@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healify/models/user.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/profile/profile.dart';
+import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/ui/screens/record/editrecord.dart';
 import 'package:healify/utils/colors.dart';
 
@@ -14,7 +17,7 @@ class RecordInfo extends StatefulWidget {
   final List<dynamic>? symptoms;
   final List<dynamic>? diagnosis;
   final List<dynamic>? treatment;
-  final List<dynamic>? reports;
+  final List<Report>? reports;
   final String id;
   const RecordInfo(
       {super.key,
@@ -31,11 +34,31 @@ class RecordInfo extends StatefulWidget {
 }
 
 class _RecordInfoState extends State<RecordInfo> {
-  var presignController = PresignController();
+  var presignController = Presign();
+
+  var profileController = Get.find<ProfileController>();
+
+  List<String> files = [];
 
   @override
   void initState() {
     super.initState();
+    getFiles();
+  }
+
+  Future<void> getFiles() async {
+    List<String> urls = [];
+    for (var file in widget.reports!) {
+      var response = await presignController.getDownloadPresignedUrl(
+          profileController.profile!.data!.username!, file.objectKey!);
+      urls.add(response.url!);
+    }
+
+    setState(() {
+      files = urls;
+    });
+
+    print(files);
   }
 
   @override
@@ -330,14 +353,20 @@ class _RecordInfoState extends State<RecordInfo> {
                     padding: const EdgeInsets.all(5),
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    childAspectRatio: 4.5 / 1.5,
+                    childAspectRatio: 1.5 / 1.5,
                     physics: NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
                     children: [
-                      if (widget.reports != null)
-                        for (var i in widget.reports!)
+                      if (files != null)
+                        for (var i in files)
                           if (i.toString().contains("image"))
-                            CachedNetworkImage(imageUrl: i.toString())
+                            CachedNetworkImage(
+                              imageUrl: i,
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            ),
                     ],
                   ),
                 ),
@@ -352,5 +381,3 @@ class _RecordInfoState extends State<RecordInfo> {
     );
   }
 }
-
-class PresignController {}

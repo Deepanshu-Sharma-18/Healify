@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:healify/models/file.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
@@ -14,6 +15,7 @@ import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:healify/utils/constants.dart';
 
 class AddRecord extends StatefulWidget {
   const AddRecord({super.key});
@@ -38,8 +40,6 @@ class _AddRecordState extends State<AddRecord> {
 
     DateTime? date = DateTime.now();
 
-    Future<void> uploadRecords() async {}
-
     Future<void> savePost() async {
       if (title.text.isEmpty || date == null) {
         Get.snackbar("Failure", "Please fill the title");
@@ -57,12 +57,13 @@ class _AddRecordState extends State<AddRecord> {
 
               await prsignController.uploadFileToS3(response.url!, element);
 
-              response = await prsignController.getDownloadPresignedUrl(
-                  profileController.profile!.data!.username!,
-                  element.path.split("/").last);
-
-              addPostController.recordUrls.add(response.url!);
-              print(addPostController.recordUrls);
+              addPostController.filesToUpload.add(FileModel(
+                bucketName: bucketName,
+                objectKey: element.path.split("/").last,
+                content: prsignController
+                    .getContentType(element.path.split("/").last),
+                username: profileController.profile!.data!.username!,
+              ));
             } catch (e) {
               Get.snackbar("Failure", "Failed to upload file. try again later");
             }
@@ -75,7 +76,7 @@ class _AddRecordState extends State<AddRecord> {
           addPostController.symptoms,
           addPostController.diagnosis,
           addPostController.treatment,
-          addPostController.recordUrls,
+          addPostController.filesToUpload,
           profileController.profile!.data!.id!);
 
       await profileController

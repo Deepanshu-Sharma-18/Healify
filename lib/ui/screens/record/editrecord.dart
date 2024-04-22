@@ -86,46 +86,46 @@ class _AddRecordState extends State<EditRecord> {
     date = DateTime.parse("$year-$month-$day");
   }
 
-  Future<void> updateRecord() async {
-    if (title.text.isEmpty || date == null) {
-      Get.snackbar("Failure", "Please fill the title");
-      return;
-    }
-    Get.back();
-    if (editPostController.records.isNotEmpty) {
-      await editPostController.records.map(
-        (element) async {
-          PresignModel response;
-          try {
-            response = await prsignController.getUploadPresignedUrl(
-                profileController.profile!.data!.username!,
-                element.path.split("/").last);
+  // Future<void> updateRecord() async {
+  //   if (title.text.isEmpty || date == null) {
+  //     Get.snackbar("Failure", "Please fill the title");
+  //     return;
+  //   }
+  //   Get.back();
+  //   if (editPostController.records.isNotEmpty) {
+  //     await editPostController.records.map(
+  //       (element) async {
+  //         PresignModel response;
+  //         try {
+  //           response = await prsignController.getUploadPresignedUrl(
+  //               profileController.profile!.data!.username!,
+  //               element.path.split("/").last);
 
-            await prsignController.uploadFileToS3(response.url!, element);
+  //           await prsignController.uploadFileToS3(response.url!, element);
 
-            response = await prsignController.getDownloadPresignedUrl(
-                profileController.profile!.data!.username!,
-                element.path.split("/").last);
+  //           response = await prsignController.getDownloadPresignedUrl(
+  //               profileController.profile!.data!.username!,
+  //               element.path.split("/").last);
 
-            editPostController.recordUrls.add(response.url!);
-            print(editPostController.recordUrls);
-          } catch (e) {
-            Get.snackbar("Failure", "Failed to upload file. try again later");
-          }
-        },
-      ).wait;
-    }
-    await post.saveReport(
-        title.text,
-        "${date!.day}/${date!.month}/${date!.year}",
-        editPostController.symptoms,
-        editPostController.diagnosis,
-        editPostController.treatment,
-        editPostController.recordUrls,
-        profileController.profile!.data!.id!);
+  //           editPostController.recordUrls.add(response.url!);
+  //           print(editPostController.recordUrls);
+  //         } catch (e) {
+  //           Get.snackbar("Failure", "Failed to upload file. try again later");
+  //         }
+  //       },
+  //     ).wait;
+  //   }
+  //   await post.saveReport(
+  //       title.text,
+  //       "${date!.day}/${date!.month}/${date!.year}",
+  //       editPostController.symptoms,
+  //       editPostController.diagnosis,
+  //       editPostController.treatment,
+  //       editPostController.recordUrls,
+  //       profileController.profile!.data!.id!);
 
-    await profileController.getProfile(FirebaseAuth.instance.currentUser!.uid!);
-  }
+  //   await profileController.getProfile(FirebaseAuth.instance.currentUser!.uid!);
+  // }
 
   @override
   Widget build(BuildContext context) {

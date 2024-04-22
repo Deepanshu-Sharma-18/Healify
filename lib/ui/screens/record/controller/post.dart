@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:healify/models/file.dart';
+import 'package:healify/models/user.dart';
 import 'package:healify/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,7 +15,7 @@ class Post {
       List<String>? symptoms,
       List<String>? diagnosis,
       List<String>? treatment,
-      List<String>? reports,
+      List<FileModel>? reports,
       String userid) async {
     var data = {
       "title": title,
@@ -20,8 +23,18 @@ class Post {
       "symptoms": symptoms ?? [],
       "diagnosis": diagnosis ?? [],
       "treatment": treatment ?? [],
-      "reports": reports ?? [],
-      "userid": userid
+      "reports": reports != null
+          ? [
+              for (var report in reports)
+                {
+                  "bucketname": report.bucketName,
+                  "objectkey": report.objectKey,
+                  "content": report.content,
+                  "username": report.username
+                },
+            ]
+          : [],
+      "userId": userid
     };
 
     var jsonString = jsonEncode(data);

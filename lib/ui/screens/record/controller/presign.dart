@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:healify/utils/constants.dart';
 
 class Presign {
@@ -52,27 +55,23 @@ class Presign {
   }
 
   Future<void> uploadFileToS3(String presignedUrl, File file) async {
-    final bytes = await file.readAsBytes();
+    Dio dio = new Dio();
+    var len = await file.length();
+    var response = await dio.put(presignedUrl,
+        data: file.openRead(),
+        options: Options(headers: {
+          Headers.contentLengthHeader: len,
+        } // set content-length
+            ));
 
-    final request = http.MultipartRequest('PUT', Uri.parse(presignedUrl));
-    request.fields['Content-Type'] = getContentType(file.path.toString());
-
-    final multipartFile = http.MultipartFile.fromBytes(
-      'file',
-      bytes,
-      filename: file.path.split("/").last.toString(),
-    );
-    request.files.add(multipartFile);
-
-    final response = await request.send();
-    // final responseStream = await response.stream.toBytes();
-
-    if (response.statusCode == 200) {
-      print('File uploaded successfully!');
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      if (kDebugMode) {
+        print('File uploaded successfully!');
+      }
     } else {
-      print('Error uploading file: ${response.reasonPhrase}');
-      // print(
-      //     'Response body: ${String.fromCharCodes(responseStream)}'); // For debugging
+      if (kDebugMode) {
+        print('Error uploading file: ${response.data}');
+      }
     }
   }
 

@@ -25,9 +25,9 @@ func GenerateUploadPresignedUrl(c *gin.Context) {
 	expiration := time.Minute * 10
 
 	req, err := initializers.PresignClient.PresignPutObject(context.Background(), &s3.PutObjectInput{
-		Bucket:   aws.String(file.BucketName),
-		Key:      aws.String(fmt.Sprintf("%s/%s/%s", file.Username, file.Content, file.ObjectKey)),
-		Metadata: file.Metadata,
+		Bucket: aws.String(file.BucketName),
+		Key:    aws.String(fmt.Sprintf("%s/%s/%s", file.Username, file.Content, file.ObjectKey)),
+		// Metadata: map[string]string{"Content-Type": file.Content},
 	},
 		func(o *s3.PresignOptions) {
 			o.Expires = expiration
