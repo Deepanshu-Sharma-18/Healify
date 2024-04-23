@@ -9,5 +9,7 @@ class AddPost extends GetxController {
   List<String> treatment = <String>[].obs;
   List<File> records = <File>[].obs;
 
+  Rx<DateTime> date = DateTime.now().obs;
+
   List<FileModel> filesToUpload = <FileModel>[];
 }

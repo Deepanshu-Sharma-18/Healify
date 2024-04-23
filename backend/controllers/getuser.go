@@ -28,7 +28,7 @@ func GetUser(c *gin.Context) {
 
 	post, err := initializers.Client.User.FindFirst(
 		db.User.AuthID.Equals(auth.AuthId),
-	).With(db.User.Records.Fetch().With(db.Record.Reports.Fetch())).Exec(ctx)
+	).With(db.User.Records.Fetch().OrderBy(db.Record.ID.Order(db.DESC)).With(db.Record.Reports.Fetch())).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

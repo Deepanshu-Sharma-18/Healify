@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:healify/models/responsepresign.dart';
+import 'package:healify/models/user.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
@@ -23,6 +24,7 @@ class EditRecord extends StatefulWidget {
   final List<dynamic>? treatment;
   final List<dynamic>? records;
   final String id;
+
   const EditRecord(
       {super.key,
       required this.date,
@@ -43,13 +45,11 @@ class _AddRecordState extends State<EditRecord> {
   var post = Post();
   var prsignController = Presign();
 
-  var editPostController = EditPost();
+  var editPostController = Get.put(EditPost());
   late TextEditingController title;
   var symptoms = TextEditingController();
   var diagnosis = TextEditingController();
   var treatment = TextEditingController();
-
-  DateTime? date = DateTime.now();
 
   @override
   void initState() {
@@ -57,33 +57,20 @@ class _AddRecordState extends State<EditRecord> {
 
     title = TextEditingController(text: widget.title);
 
-    if (widget.symptoms != null) {
-      editPostController.symptoms.value =
-          widget.symptoms!.map((e) => e.toString()).toList();
-    }
-
-    if (widget.diagnosis != null) {
-      editPostController.diagnosis.value =
-          widget.diagnosis!.map((e) => e.toString()).toList();
-    }
-
-    if (widget.treatment != null) {
-      editPostController.treatment.value =
-          widget.treatment!.map((e) => e.toString()).toList();
-    }
-
-    if (widget.records != null) {
-      editPostController.recordUrls =
-          widget.records!.map((e) => e.toString()).toList();
-    }
+    editPostController.updateLists(
+        widget.symptoms?.cast<String>(),
+        widget.diagnosis?.cast<String>(),
+        widget.treatment?.cast<String>(),
+        widget.records?.cast<Report>());
 
     var day = widget.date.split("/").first;
     var year = widget.date.split("/").last;
     var month = widget.date.split("/")[1];
 
     if (month.length == 1) month = "0$month";
+    if (day.length == 1) day = "0$day";
 
-    date = DateTime.parse("$year-$month-$day");
+    editPostController.date.value = DateTime.parse("$year-$month-$day");
   }
 
   // Future<void> updateRecord() async {
@@ -152,7 +139,7 @@ class _AddRecordState extends State<EditRecord> {
                     fontsize: 30,
                     fontcolor: Colors.black,
                     fontweight: FontWeight.bold,
-                    text: "Add Record",
+                    text: "Edit Record",
                   ),
                   const SizedBox(
                     height: 20,
@@ -169,11 +156,11 @@ class _AddRecordState extends State<EditRecord> {
                     ),
                     InkWell(
                       onTap: () async {
-                        date = await showDatePicker(
+                        editPostController.date.value = (await showDatePicker(
                           context: context,
                           firstDate: DateTime(1990),
                           lastDate: DateTime.now(),
-                        );
+                        ))!;
                       },
                       child: Container(
                         height: 30,
@@ -197,7 +184,8 @@ class _AddRecordState extends State<EditRecord> {
                     fontsize: 17,
                     fontcolor: Colors.green,
                     fontweight: FontWeight.w700,
-                    text: "${date!.day}/${date!.month}/${date!.year}",
+                    text:
+                        "${editPostController.date.value.day}/${editPostController.date.value.month}/${editPostController.date.value.year}",
                   ),
                   const SizedBox(
                     height: 20,
@@ -228,7 +216,7 @@ class _AddRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.symptoms.value)
+                  for (var i in editPostController.symptoms)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -256,7 +244,7 @@ class _AddRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.symptoms.value.remove(i);
+                              editPostController.symptoms.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -275,7 +263,7 @@ class _AddRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.symptoms.value.isEmpty)
+                  if (!editPostController.symptoms.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -293,7 +281,7 @@ class _AddRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.symptoms.value.add(symptoms.text);
+                          editPostController.symptoms.add(symptoms.text);
                           symptoms.clear();
                         },
                         child: Container(
@@ -323,7 +311,7 @@ class _AddRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.diagnosis.value)
+                  for (var i in editPostController.diagnosis)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -351,7 +339,7 @@ class _AddRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.diagnosis.value.remove(i);
+                              editPostController.diagnosis.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -370,7 +358,7 @@ class _AddRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.diagnosis.value.isEmpty)
+                  if (!editPostController.diagnosis.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -388,8 +376,7 @@ class _AddRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.diagnosis.value
-                              .add(diagnosis.text);
+                          editPostController.diagnosis.add(diagnosis.text);
                           diagnosis.clear();
                         },
                         child: Container(
@@ -419,7 +406,7 @@ class _AddRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  for (var i in editPostController.treatment.value)
+                  for (var i in editPostController.treatment)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: double.maxFinite,
@@ -447,7 +434,7 @@ class _AddRecordState extends State<EditRecord> {
                           ),
                           InkWell(
                             onTap: () {
-                              editPostController.treatment.value.remove(i);
+                              editPostController.treatment.remove(i);
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -466,7 +453,7 @@ class _AddRecordState extends State<EditRecord> {
                         ],
                       ),
                     ),
-                  if (!editPostController.treatment.value.isEmpty)
+                  if (!editPostController.treatment.isEmpty)
                     const SizedBox(
                       height: 20,
                     ),
@@ -484,8 +471,7 @@ class _AddRecordState extends State<EditRecord> {
                       ),
                       InkWell(
                         onTap: () {
-                          editPostController.treatment.value
-                              .add(treatment.text);
+                          editPostController.treatment.add(treatment.text);
                           treatment.clear();
                         },
                         child: Container(

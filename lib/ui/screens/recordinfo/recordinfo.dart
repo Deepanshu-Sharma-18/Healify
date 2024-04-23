@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
 import 'package:healify/models/user.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
@@ -10,6 +13,7 @@ import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/ui/screens/record/editrecord.dart';
 import 'package:healify/utils/colors.dart';
+import 'package:http/http.dart' as http;
 
 class RecordInfo extends StatefulWidget {
   final String date;
@@ -51,7 +55,22 @@ class _RecordInfoState extends State<RecordInfo> {
     for (var file in widget.reports!) {
       var response = await presignController.getDownloadPresignedUrl(
           profileController.profile!.data!.username!, file.objectKey!);
-      urls.add(response.url!);
+
+      if (response.url!.contains("pdf")) {
+        final pdf = await http.get(Uri.parse(response.url!));
+        if (pdf.statusCode == 200) {
+          final tempDir = Directory.systemTemp;
+          final filePath = tempDir.path + "/" + file.objectKey!;
+          final pdfFile = File(filePath);
+          await pdfFile.writeAsBytes(pdf.bodyBytes);
+
+          urls.add(pdfFile.path);
+        } else {
+          print("Error downloading PDF: ${pdf.body}");
+        }
+      } else {
+        urls.add(response.url!);
+      }
     }
 
     setState(() {
@@ -359,14 +378,17 @@ class _RecordInfoState extends State<RecordInfo> {
                     children: [
                       if (files != null)
                         for (var i in files)
-                          if (i.toString().contains("image"))
-                            CachedNetworkImage(
-                              imageUrl: i,
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                            ),
+                          i.toString().contains("image")
+                              ? CachedNetworkImage(
+                                  imageUrl: i,
+                                  placeholder: (context, url) =>
+                                      CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                )
+                              : PDFView(
+                                  filePath: i.toString(),
+                                )
                     ],
                   ),
                 ),

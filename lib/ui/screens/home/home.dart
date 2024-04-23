@@ -6,6 +6,7 @@ import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/record.dart';
+import 'package:healify/ui/screens/sharedrecords/sharedrecords.dart';
 import 'package:healify/ui/screens/timeline/timeline.dart';
 import 'package:healify/utils/colors.dart';
 
@@ -297,6 +298,133 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(
                           height: 30,
+                        ),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: ColorTheme.grey,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  MyText(
+                                    fontsize: 20,
+                                    fontcolor: Colors.black,
+                                    fontweight: FontWeight.w700,
+                                    text: "Your Records",
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  MyText(
+                                    fontsize: 13,
+                                    fontcolor: Colors.black,
+                                    fontweight: FontWeight.w500,
+                                    text: "(" +
+                                        profileController
+                                            .profile!.data!.records!.length
+                                            .toString()
+                                            .removeAllWhitespace +
+                                        ")",
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              profileController
+                                          .profile!.data!.records!.length ==
+                                      0
+                                  ? Container(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 50),
+                                      child: Center(
+                                        child: MyText(
+                                          fontsize: 15,
+                                          fontcolor: Colors.black,
+                                          fontweight: FontWeight.w500,
+                                          text: "No records found",
+                                        ),
+                                      ),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        ListView(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          children: List.generate(
+                                            profileController.profile!.data!
+                                                        .records!.length >
+                                                    3
+                                                ? 3
+                                                : profileController.profile!
+                                                    .data!.records!.length,
+                                            (index) => RecordCard(
+                                              id: profileController.profile!
+                                                  .data!.records![index].id
+                                                  .toString(),
+                                              date: profileController.profile!
+                                                  .data!.records![index].date
+                                                  .toString(),
+                                              title: profileController.profile!
+                                                  .data!.records![index].title
+                                                  .toString(),
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                              SizedBox(
+                                height: 7,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Get.to(() => SharedRecord());
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    color: ColorTheme.green,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      MyText(
+                                          fontsize: 15,
+                                          fontcolor: Colors.black,
+                                          fontweight: FontWeight.w500,
+                                          text: "View all records"),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: Colors.black,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

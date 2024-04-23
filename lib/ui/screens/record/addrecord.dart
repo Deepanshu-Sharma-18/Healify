@@ -38,10 +38,8 @@ class _AddRecordState extends State<AddRecord> {
     var diagnosis = TextEditingController();
     var treatment = TextEditingController();
 
-    DateTime? date = DateTime.now();
-
     Future<void> savePost() async {
-      if (title.text.isEmpty || date == null) {
+      if (title.text.isEmpty) {
         Get.snackbar("Failure", "Please fill the title");
         return;
       }
@@ -72,7 +70,7 @@ class _AddRecordState extends State<AddRecord> {
       }
       await post.saveReport(
           title.text,
-          "${date!.day}/${date!.month}/${date!.year}",
+          "${addPostController.date.value.day}/${addPostController.date.value.month}/${addPostController.date.value.year}",
           addPostController.symptoms,
           addPostController.diagnosis,
           addPostController.treatment,
@@ -123,11 +121,11 @@ class _AddRecordState extends State<AddRecord> {
                     ),
                     InkWell(
                       onTap: () async {
-                        date = await showDatePicker(
+                        addPostController.date.value = (await showDatePicker(
                           context: context,
                           firstDate: DateTime(1990),
                           lastDate: DateTime.now(),
-                        );
+                        ))!;
                       },
                       child: Container(
                         height: 30,
@@ -151,7 +149,8 @@ class _AddRecordState extends State<AddRecord> {
                     fontsize: 17,
                     fontcolor: Colors.green,
                     fontweight: FontWeight.w700,
-                    text: "${date!.day}/${date!.month}/${date!.year}",
+                    text:
+                        "${addPostController.date.value.day}/${addPostController.date.value.month}/${addPostController.date.value.year}",
                   ),
                   const SizedBox(
                     height: 20,
