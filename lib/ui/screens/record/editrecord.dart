@@ -488,6 +488,16 @@ class _EditRecordState extends State<EditRecord> {
                     ],
                   ),
                   const SizedBox(
+                    height: 20,
+                  ),
+                  MyText(
+                    fontsize: 10,
+                    fontcolor: ColorTheme.metamask,
+                    fontweight: FontWeight.w500,
+                    text:
+                        "*Report files are not editable. You can only delete them. If you want to add or edit a report file, please create a new record.",
+                  ),
+                  const SizedBox(
                     height: 30,
                   ),
                   OutlinedButton(
