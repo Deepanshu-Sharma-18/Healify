@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:healify/models/file.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/models/user.dart';
 import 'package:healify/ui/components/showfile.dart';
@@ -15,6 +16,7 @@ import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:healify/utils/constants.dart';
 
 class EditRecord extends StatefulWidget {
   final String date;
@@ -22,7 +24,7 @@ class EditRecord extends StatefulWidget {
   final List<dynamic>? symptoms;
   final List<dynamic>? diagnosis;
   final List<dynamic>? treatment;
-  final List<dynamic>? records;
+  final List<Report>? records;
   final String id;
 
   const EditRecord(
@@ -36,10 +38,10 @@ class EditRecord extends StatefulWidget {
       required this.id});
 
   @override
-  State<EditRecord> createState() => _AddRecordState();
+  State<EditRecord> createState() => _EditRecordState();
 }
 
-class _AddRecordState extends State<EditRecord> {
+class _EditRecordState extends State<EditRecord> {
   var profileController = Get.find<ProfileController>();
 
   var post = Post();
@@ -61,7 +63,7 @@ class _AddRecordState extends State<EditRecord> {
         widget.symptoms?.cast<String>(),
         widget.diagnosis?.cast<String>(),
         widget.treatment?.cast<String>(),
-        widget.records?.cast<Report>());
+        widget.records);
 
     var day = widget.date.split("/").first;
     var year = widget.date.split("/").last;
@@ -73,46 +75,42 @@ class _AddRecordState extends State<EditRecord> {
     editPostController.date.value = DateTime.parse("$year-$month-$day");
   }
 
-  // Future<void> updateRecord() async {
-  //   if (title.text.isEmpty || date == null) {
-  //     Get.snackbar("Failure", "Please fill the title");
-  //     return;
-  //   }
-  //   Get.back();
-  //   if (editPostController.records.isNotEmpty) {
-  //     await editPostController.records.map(
-  //       (element) async {
-  //         PresignModel response;
-  //         try {
-  //           response = await prsignController.getUploadPresignedUrl(
-  //               profileController.profile!.data!.username!,
-  //               element.path.split("/").last);
+  Future<void> updateRecord() async {
+    if (title.text.isEmpty) {
+      Get.snackbar("Failure", "Please fill the title");
+      return;
+    }
 
-  //           await prsignController.uploadFileToS3(response.url!, element);
+    Get.back();
+    if (editPostController.newrecords.isNotEmpty) {
+      await editPostController.newrecords.map(
+        (element) async {
+          PresignModel response;
+          try {
+            response = await prsignController.getUploadPresignedUrl(
+                profileController.profile!.data!.username!,
+                element.path.split("/").last);
 
-  //           response = await prsignController.getDownloadPresignedUrl(
-  //               profileController.profile!.data!.username!,
-  //               element.path.split("/").last);
+            await prsignController.uploadFileToS3(response.url!, element);
+          } catch (e) {
+            Get.snackbar("Failure", "Failed to upload file. try again later");
+          }
+        },
+      ).wait;
+    }
 
-  //           editPostController.recordUrls.add(response.url!);
-  //           print(editPostController.recordUrls);
-  //         } catch (e) {
-  //           Get.snackbar("Failure", "Failed to upload file. try again later");
-  //         }
-  //       },
-  //     ).wait;
-  //   }
-  //   await post.saveReport(
-  //       title.text,
-  //       "${date!.day}/${date!.month}/${date!.year}",
-  //       editPostController.symptoms,
-  //       editPostController.diagnosis,
-  //       editPostController.treatment,
-  //       editPostController.recordUrls,
-  //       profileController.profile!.data!.id!);
+    await post.updateRecord(
+        widget.id,
+        title.text,
+        "${editPostController.date.value.day}/${editPostController.date.value.month}/${editPostController.date.value.year}",
+        editPostController.symptoms,
+        editPostController.diagnosis,
+        editPostController.treatment,
+        editPostController.filesToUpload,
+        profileController.profile!.data!.id!);
 
-  //   await profileController.getProfile(FirebaseAuth.instance.currentUser!.uid!);
-  // }
+    await profileController.getProfile(FirebaseAuth.instance.currentUser!.uid!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -490,90 +488,11 @@ class _AddRecordState extends State<EditRecord> {
                     ],
                   ),
                   const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      MyText(
-                        fontsize: 20,
-                        fontcolor: Colors.black,
-                        fontweight: FontWeight.w800,
-                        text: "Record File",
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      OutlinedButton(
-                        onPressed: () async {
-                          FilePickerResult? result = await FilePicker.platform
-                              .pickFiles(allowMultiple: true);
-
-                          if (result != null) {
-                            List<File> files = result.paths
-                                .map((path) => File(path!))
-                                .toList();
-                            for (var file in files) {
-                              editPostController.records.add(file);
-                            }
-                          } else {
-                            // User canceled the picker
-                          }
-                        },
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.all<EdgeInsets>(
-                            EdgeInsets.all(0),
-                          ),
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              ColorTheme.metamask),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 0),
-                          width: 120,
-                          height: 20,
-                          alignment: Alignment.center,
-                          child: MyText(
-                            text: "Upload Record",
-                            fontcolor: Colors.black,
-                            fontsize: 10,
-                            fontweight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    height: 200,
-                    child: GridView.count(
-                      padding: const EdgeInsets.all(5),
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                      childAspectRatio: 6.5 / 1.5,
-                      physics: NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      children: [
-                        for (var file in editPostController.records)
-                          FileCard(
-                              fileName: file.path.split("/").last,
-                              fileType: file.path.split(".").last)
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
                     height: 30,
                   ),
                   OutlinedButton(
                     onPressed: () async {
-                      // await savePost();
-                      // Get.back();
+                      await updateRecord();
                     },
                     style: ButtonStyle(
                       backgroundColor:

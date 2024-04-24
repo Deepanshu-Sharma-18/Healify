@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:healify/models/user.dart';
+
 RecordModel recordModelFromMap(String str) =>
     RecordModel.fromMap(json.decode(str));
 
@@ -32,7 +34,7 @@ class Data {
   List<dynamic>? symptoms;
   List<String>? diagnosis;
   List<String>? treatment;
-  List<String>? reports;
+  List<Report>? reports;
   String? userId;
 
   Data({
@@ -61,7 +63,7 @@ class Data {
             : List<String>.from(json["treatment"]!.map((x) => x)),
         reports: json["reports"] == null
             ? []
-            : List<String>.from(json["reports"]!.map((x) => x)),
+            : List<Report>.from(json["reports"]!.map((x) => Report.fromMap(x))),
         userId: json["userId"],
       );
 

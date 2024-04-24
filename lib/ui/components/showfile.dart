@@ -1,12 +1,23 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/screens/record/controller/addpost.dart';
 import 'package:healify/utils/colors.dart';
 
 class FileCard extends StatelessWidget {
+  FileCard(
+      {super.key,
+      required this.fileType,
+      required this.fileName,
+      required this.controller,
+      required this.file});
+
+  var controller;
+  var file;
   final String fileName;
   final String fileType;
-  const FileCard({super.key, required this.fileName, required this.fileType});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +53,11 @@ class FileCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 5),
-          Icon(Icons.delete, color: Colors.red, size: 20),
+          InkWell(
+              onTap: () {
+                controller.records.remove(file);
+              },
+              child: Icon(Icons.delete, color: Colors.red, size: 20)),
         ],
       ),
     );

@@ -2,29 +2,27 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/utils/constants.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:web3dart/web3dart.dart';
 
 class Web3Controller extends GetxController {
-  late ContractAbi _abiCode;
-  late DeployedContract _deployedContract;
-
-  EthPrivateKey _privateKey = PrivateKey;
-  Credentials _cred = PrivateKey;
-
-  final String socketUrl = SocketUrl;
-  final String rpcUrl = RpcUrl;
-
   late ContractFunction addPatient;
   late ContractFunction addRecord;
   late ContractFunction deleteRecord;
   late ContractFunction getPatientsRecords;
+  late ContractFunction getsharedRecords;
   late ContractFunction grantAccess;
   late ContractFunction revokeAccess;
-  late ContractFunction getsharedRecords;
-
+  final String rpcUrl = RpcUrl;
+  final String socketUrl = SocketUrl;
   late Web3Client web3client;
+
+  late ContractAbi _abiCode;
+  Credentials _cred = PrivateKey;
+  late DeployedContract _deployedContract;
+  EthPrivateKey _privateKey = PrivateKey;
 
   init() async {
     String abiFile = await rootBundle.loadString('assets/HealthRecords.json');
@@ -51,72 +49,83 @@ class Web3Controller extends GetxController {
     getsharedRecords = _deployedContract.function('getsharedRecords');
   }
 
-  Future<void> getSharedRecordsFromBlockchain(String address) async {
+  Future<List> getSharedRecordsFromBlockchain(String address) async {
     final _address = EthereumAddress.fromHex(address);
+
     final data = await web3client.call(
         contract: _deployedContract,
         function: getsharedRecords,
         params: [_address]);
 
-    print(data.toString());
+    return data;
   }
 
-  Future<void> getPatientRecordsFromBlockchain(
+  Future<List> getPatientRecordsFromBlockchain(
       String authid, String documentid) async {
     final data = await web3client.call(
         contract: _deployedContract,
         function: getPatientsRecords,
         params: [authid, documentid]);
 
-    print(data.toString());
+    return data;
   }
 
   Future<void> addPatientFromBlockchain(String authid) async {
-    final data = await web3client.call(
-        contract: _deployedContract, function: addPatient, params: [authid]);
-
-    print(data.toString());
+    await web3client.sendTransaction(
+        chainId: 11155111,
+        _cred,
+        Transaction.callContract(
+            contract: _deployedContract,
+            function: addPatient,
+            parameters: [authid]));
   }
 
   Future<void> addRecordFromBlockchain(String authid, String documentid) async {
-    final data = await web3client.call(
-        contract: _deployedContract,
-        function: addRecord,
-        params: [authid, documentid]);
-
-    print(data.toString());
+    await web3client.sendTransaction(
+        chainId: 11155111,
+        _cred,
+        Transaction.callContract(
+            contract: _deployedContract,
+            function: addRecord,
+            parameters: [authid, documentid]));
   }
 
   Future<void> deleteRecordFromBlockchain(
       String authid, String documentid, List<String> address) async {
     final ethAddress = address.map((e) => EthereumAddress.fromHex(e)).toList();
-    final data = await web3client.call(
-        contract: _deployedContract,
-        function: deleteRecord,
-        params: [authid, documentid, ethAddress]);
 
-    print(data.toString());
+    await web3client.sendTransaction(
+        chainId: 11155111,
+        _cred,
+        Transaction.callContract(
+            contract: _deployedContract,
+            function: deleteRecord,
+            parameters: [authid, documentid, ethAddress]));
   }
 
   Future<void> grantAccessFromBlockchain(
       String authid, String documentid, String address) async {
     final ethAddress = EthereumAddress.fromHex(address);
-    final data = await web3client.call(
-        contract: _deployedContract,
-        function: grantAccess,
-        params: [authid, documentid, ethAddress]);
 
-    print(data.toString());
+    await web3client.sendTransaction(
+        chainId: 11155111,
+        _cred,
+        Transaction.callContract(
+            contract: _deployedContract,
+            function: grantAccess,
+            parameters: [authid, documentid, ethAddress]));
   }
 
   Future<void> revokeAccessFromBlockchain(
       String authid, String documentid, String address) async {
     final ethAddress = EthereumAddress.fromHex(address);
-    final data = await web3client.call(
-        contract: _deployedContract,
-        function: revokeAccess,
-        params: [authid, documentid, ethAddress]);
 
-    print(data.toString());
+    await web3client.sendTransaction(
+        chainId: 11155111,
+        _cred,
+        Transaction.callContract(
+            contract: _deployedContract,
+            function: revokeAccess,
+            parameters: [authid, documentid, ethAddress]));
   }
 }

@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
 import 'package:healify/models/user.dart';
+import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
@@ -16,13 +18,6 @@ import 'package:healify/utils/colors.dart';
 import 'package:http/http.dart' as http;
 
 class RecordInfo extends StatefulWidget {
-  final String date;
-  final String title;
-  final List<dynamic>? symptoms;
-  final List<dynamic>? diagnosis;
-  final List<dynamic>? treatment;
-  final List<Report>? reports;
-  final String id;
   const RecordInfo(
       {super.key,
       required this.date,
@@ -33,16 +28,24 @@ class RecordInfo extends StatefulWidget {
       this.reports,
       required this.id});
 
+  final String date;
+  final List<dynamic>? diagnosis;
+  final String id;
+  final List<Report>? reports;
+  final List<dynamic>? symptoms;
+  final String title;
+  final List<dynamic>? treatment;
+
   @override
   State<RecordInfo> createState() => _RecordInfoState();
 }
 
 class _RecordInfoState extends State<RecordInfo> {
-  var presignController = Presign();
-
-  var profileController = Get.find<ProfileController>();
-
   List<String> files = [];
+  var presignController = Presign();
+  var profileController = Get.find<ProfileController>();
+  var share = TextEditingController();
+  var web3controller = Get.find<Web3Controller>();
 
   @override
   void initState() {
@@ -149,7 +152,7 @@ class _RecordInfoState extends State<RecordInfo> {
                                     symptoms: widget.symptoms ?? [],
                                     diagnosis: widget.diagnosis ?? [],
                                     treatment: widget.treatment ?? [],
-                                    records: widget.reports!),
+                                    records: widget.reports ?? []),
                               );
                             },
                             child: Container(
@@ -169,17 +172,109 @@ class _RecordInfoState extends State<RecordInfo> {
                           const SizedBox(
                             width: 10,
                           ),
-                          Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              color: ColorTheme.green,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Icon(
-                              Icons.share,
-                              color: Colors.white,
-                              size: 20,
+                          InkWell(
+                            onTap: () async {
+                              await Get.bottomSheet(
+                                Container(
+                                  height: 300,
+                                  width: double.maxFinite,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      MyText(
+                                        fontsize: 20,
+                                        fontcolor: ColorTheme.metamask,
+                                        fontweight: FontWeight.bold,
+                                        text: "Share Record",
+                                      ),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      MyText(
+                                        fontsize: 15,
+                                        fontcolor: Colors.black,
+                                        fontweight: FontWeight.bold,
+                                        text: "Share with",
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      MyTextfield(
+                                        hintText: "Enter Address",
+                                        controller: share,
+                                        labelText: "Address",
+                                      ),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      OutlinedButton(
+                                        onPressed: () async {
+                                          share.clear();
+                                          Get.back();
+
+                                          await web3controller
+                                              .grantAccessFromBlockchain(
+                                                  profileController
+                                                      .profile!.data!.authId!,
+                                                  widget.id,
+                                                  "0x5F1Ea3acAa2C70a936E2066AC285eB0e30D22e9c");
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              MaterialStateProperty.all<Color>(
+                                                  ColorTheme.metamask),
+                                          shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                          ),
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          width: double.infinity,
+                                          height: 60,
+                                          alignment: Alignment.center,
+                                          child: MyText(
+                                            text: "Share Record",
+                                            fontcolor: Colors.black,
+                                            fontsize: 17,
+                                            fontweight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              height: 45,
+                              width: 45,
+                              decoration: BoxDecoration(
+                                color: ColorTheme.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Icon(
+                                Icons.share,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ],

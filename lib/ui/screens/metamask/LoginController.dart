@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
+import 'package:healify/utils/constants.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
@@ -15,7 +16,7 @@ class LoginController extends GetxController {
   W3MService? w3mService;
 
   var chainId = "11155111";
-  var contractAddress = "0x94791C982a6d132D5E547a563aE038243C2e6A9F";
+  // var _contractAddress = contractAddress;
 
   final sepoliaChain = W3MChainInfo(
     chainName: 'Sepolia',
@@ -43,10 +44,11 @@ class LoginController extends GetxController {
       ),
     );
     await w3mService!.init();
+    updateAccountNo();
   }
 
-  void updateAccountNo(String accountNo) {
-    _accountNo.value = accountNo;
+  void updateAccountNo() {
+    _accountNo.value = w3mService!.session!.address.toString();
     update();
   }
 

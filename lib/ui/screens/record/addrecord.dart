@@ -528,7 +528,10 @@ class _AddRecordState extends State<AddRecord> {
                         for (var file in addPostController.records)
                           FileCard(
                               fileName: file.path.split("/").last,
-                              fileType: file.path.split(".").last)
+                              fileType:
+                                  file.path.split(".").last.removeAllWhitespace,
+                              controller: addPostController,
+                              file: file),
                       ],
                     ),
                   ),
