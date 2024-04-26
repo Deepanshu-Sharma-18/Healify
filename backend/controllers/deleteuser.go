@@ -29,11 +29,34 @@ func DeleteUser(c *gin.Context) {
 
 	delete, err := initializers.Client.User.FindUnique(
 		db.User.Username.Equals(username.Username),
-	).Delete().Exec(ctx)
+	).With(db.User.Records.Fetch().With(db.Record.Reports.Fetch())).Exec(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	for i := 0; i < len(delete.Records()); i++ {
+
+		for j := 0; j < len(delete.Records()[i].Reports()); j++ {
+			_, err := initializers.Client.File.FindUnique(
+				db.File.ID.Equals(delete.Records()[i].Reports()[j].ID),
+			).Delete().Exec(ctx)
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+		}
+
+		_, err := initializers.Client.Record.FindUnique(
+			db.Record.ID.Equals(delete.Records()[i].ID),
+		).Delete().Exec(ctx)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 	}
 
 	result, _ := json.MarshalIndent(delete, "", "  ")

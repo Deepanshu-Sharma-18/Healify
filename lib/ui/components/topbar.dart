@@ -4,7 +4,6 @@ import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
-import 'package:web3modal_flutter/widgets/w3m_account_button.dart';
 
 class TopBar extends StatelessWidget {
   const TopBar({super.key});
@@ -15,6 +14,7 @@ class TopBar extends StatelessWidget {
     var profileController = Get.find<ProfileController>();
 
     return Container(
+      color: Colors.white,
       width: double.infinity,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -51,3 +51,7 @@ app.*.map.json
 /backend/.env
 
 /lib/utils/constants.dart
+
+
+/lib/.env
+/lib/env

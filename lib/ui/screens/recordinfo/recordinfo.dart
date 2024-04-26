@@ -14,6 +14,7 @@ import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/ui/screens/record/editrecord.dart';
+import 'package:healify/ui/screens/recordinfo/sharedcontroller.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:http/http.dart' as http;
 
@@ -42,7 +43,7 @@ class RecordInfo extends StatefulWidget {
 
 class _RecordInfoState extends State<RecordInfo> {
   List<String> files = [];
-  List<String> sharedWith = [];
+  var sharedController = SharedRecordsController();
   var presignController = Presign();
   var profileController = Get.find<ProfileController>();
   var share = TextEditingController();
@@ -60,7 +61,7 @@ class _RecordInfoState extends State<RecordInfo> {
         profileController.profile!.data!.authId!, widget.id);
 
     for (var i = 0; i < data[0][0].length; i++) {
-      sharedWith.add(data[0][0][i].toString());
+      sharedController.sharedWith.add(data[0][0][i].toString());
     }
 
     setState(() {});
@@ -280,74 +281,86 @@ class _RecordInfoState extends State<RecordInfo> {
                                         fontweight: FontWeight.bold,
                                         text: "Shared with",
                                       ),
-                                      ListView(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        children: List.generate(
-                                            sharedWith.length,
-                                            (index) => Container(
-                                                  margin: EdgeInsets.symmetric(
-                                                      vertical: 4),
-                                                  width: double.maxFinite,
-                                                  child: Row(
-                                                    children: [
-                                                      Container(
-                                                        width: 330,
-                                                        child: Text(
-                                                          sharedWith[index],
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            color: Colors.black,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                      Obx(
+                                        () => ListView(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          children: List.generate(
+                                              sharedController
+                                                  .sharedWith.length,
+                                              (index) => Container(
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 4),
+                                                    width: double.maxFinite,
+                                                    child: Row(
+                                                      children: [
+                                                        Container(
+                                                          width: 330,
+                                                          child: Text(
+                                                            sharedController
+                                                                    .sharedWith[
+                                                                index],
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              color:
+                                                                  Colors.black,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 3,
-                                                      ),
-                                                      InkWell(
-                                                        onTap: () async {
-                                                          sharedWith.remove(
-                                                              sharedWith[
-                                                                  index]);
-                                                          setState(() {});
-                                                          await web3controller
-                                                              .revokeAccessFromBlockchain(
-                                                                  profileController
-                                                                      .profile!
-                                                                      .data!
-                                                                      .authId!,
-                                                                  widget.id,
-                                                                  sharedWith[
-                                                                      index]);
-                                                        },
-                                                        child: Container(
-                                                          height: 25,
-                                                          width: 25,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: ColorTheme
-                                                                .metamask,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20),
-                                                          ),
-                                                          child: Icon(
-                                                            Icons.delete,
-                                                            color: Colors.white,
-                                                            size: 15,
+                                                        const SizedBox(
+                                                          width: 3,
+                                                        ),
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            sharedController
+                                                                .sharedWith
+                                                                .remove(sharedController
+                                                                        .sharedWith[
+                                                                    index]);
+
+                                                            await web3controller
+                                                                .revokeAccessFromBlockchain(
+                                                                    profileController
+                                                                        .profile!
+                                                                        .data!
+                                                                        .authId!,
+                                                                    widget.id,
+                                                                    sharedController
+                                                                            .sharedWith[
+                                                                        index]);
+                                                          },
+                                                          child: Container(
+                                                            height: 25,
+                                                            width: 25,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: ColorTheme
+                                                                  .metamask,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20),
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.delete,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 15,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )),
+                                                      ],
+                                                    ),
+                                                  )),
+                                        ),
                                       ),
                                     ],
                                   ),

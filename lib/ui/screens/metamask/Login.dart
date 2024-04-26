@@ -1,17 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
-import 'package:healify/ui/screens/home/home.dart';
 import 'package:healify/ui/screens/loader/loader.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
-import 'package:healify/utils/colors.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 class LoginMetamask extends StatefulWidget {
@@ -32,7 +24,8 @@ class _LoginMetaskState extends State<LoginMetamask> {
     loginController.initialize();
 
     timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (loginController.w3mService != null) {
+      if (loginController.w3mService != null &&
+          loginController.accountNo != "") {
         Get.off(() => LoadingScreen());
       }
     });

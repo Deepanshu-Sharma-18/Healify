@@ -30,6 +30,24 @@ func DeleteRecord(c *gin.Context) {
 
 	record, err := initializers.Client.Record.FindUnique(
 		db.Record.ID.Equals(documentId.DocumentId),
+	).With(db.Record.Reports.Fetch()).Exec(ctx)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	for i := 0; i < len(record.Reports()); i++ {
+		_, err := initializers.Client.File.FindUnique(
+			db.File.ID.Equals(record.Reports()[i].ID),
+		).Delete().Exec(ctx)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+	}
+
+	record1, err := initializers.Client.Record.FindUnique(
+		db.Record.ID.Equals(documentId.DocumentId),
 	).Delete().Exec(ctx)
 
 	if err != nil {
@@ -37,7 +55,7 @@ func DeleteRecord(c *gin.Context) {
 		return
 	}
 
-	result, _ := json.MarshalIndent(record, "", "  ")
+	result, _ := json.MarshalIndent(record1, "", "  ")
 	fmt.Printf("delete: %s\n", result)
 
 }

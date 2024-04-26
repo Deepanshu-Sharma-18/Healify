@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/screens/auth/signin.dart';
-import 'package:healify/ui/screens/loader/loader.dart';
 import 'package:healify/ui/screens/metamask/Login.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/utils/colors.dart';
@@ -34,6 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         color: ColorTheme.green,
         child: AnimatedSplashScreen(
+            duration: 1500,
             backgroundColor: ColorTheme.green,
             splash: Center(
                 child: MyText(

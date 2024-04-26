@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healify/repository/bottomnav.dart';
+import 'package:healify/repository/web3.dart';
+import 'package:healify/ui/components/bottomnavigation.dart';
 import 'package:healify/ui/components/recordcard.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/chat/chat.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
+import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/record.dart';
+import 'package:healify/ui/screens/sharedrecords/sharedcontroller.dart';
 import 'package:healify/ui/screens/sharedrecords/sharedrecords.dart';
 import 'package:healify/ui/screens/timeline/timeline.dart';
 import 'package:healify/utils/colors.dart';
@@ -20,10 +26,45 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var loginController = Get.find<LoginController>();
   var profileController = Get.find<ProfileController>();
+  var sharedController = Get.put(SharedController());
+  var bottomNavController = Get.put(BottomNavController());
+
+  @override
+  void initState() {
+    super.initState();
+    initWeb3();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    loginController.w3mService!.disconnect();
+  }
+
+  var web3 = Web3Controller();
+  var post = Post();
+
+  Future<void> initWeb3() async {
+    await web3.init();
+
+    print(loginController.accountNo);
+
+    var data =
+        await web3.getSharedRecordsFromBlockchain(loginController.accountNo);
+
+    for (var i = 0; i < data[0].length; i++) {
+      if (data[0][i] != null && data[0][i] != "") {
+        sharedController.sharedRecords.add(await post.getRecord(data[0][i]));
+      }
+    }
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: BottomNav(),
       body: SafeArea(
         child: Obx(
           () => Container(
@@ -53,10 +94,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 10,
                         ),
                         MyText(
-                          fontsize: 30,
+                          fontsize: 25,
                           fontcolor: Colors.black,
                           fontweight: FontWeight.bold,
-                          text: "Manage Records",
+                          text: "Home",
                         ),
                         const SizedBox(
                           height: 20,
@@ -191,58 +232,66 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(
                           height: 20,
                         ),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Image(
-                                image: AssetImage("assets/images/chatgpt.jpg"),
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      width: MediaQuery.of(context).size.width /
-                                          1.5,
-                                      child: MyText(
-                                        fontsize: 20,
-                                        fontcolor: Colors.white,
-                                        fontweight: FontWeight.bold,
-                                        text:
-                                            "Predict & Prevent any future disease",
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 35,
-                                      height: 35,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_forward_ios_rounded,
-                                        color: Colors.black,
-                                        size: 25,
-                                      ),
-                                    ),
-                                  ],
+                        InkWell(
+                          onTap: () {
+                            Get.to(() => ChatScreen());
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Image(
+                                  image:
+                                      AssetImage("assets/images/chatgpt.jpg"),
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
                                 ),
-                              ),
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                1.5,
+                                        child: MyText(
+                                          fontsize: 20,
+                                          fontcolor: Colors.white,
+                                          fontweight: FontWeight.bold,
+                                          text:
+                                              "Predict & Prevent any future disease",
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 35,
+                                        height: 35,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(50),
+                                        ),
+                                        child: const Icon(
+                                          Icons.arrow_forward_ios_rounded,
+                                          color: Colors.black,
+                                          size: 25,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(
@@ -256,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
-                              color: Colors.green,
+                              color: ColorTheme.green,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -318,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontsize: 20,
                                     fontcolor: Colors.black,
                                     fontweight: FontWeight.w700,
-                                    text: "Your Records",
+                                    text: "Shared Records",
                                   ),
                                   const SizedBox(
                                     width: 5,
@@ -328,8 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontcolor: Colors.black,
                                     fontweight: FontWeight.w500,
                                     text: "(" +
-                                        profileController
-                                            .profile!.data!.records!.length
+                                        sharedController.sharedRecords.length
                                             .toString()
                                             .removeAllWhitespace +
                                         ")",
@@ -339,9 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(
                                 height: 10,
                               ),
-                              profileController
-                                          .profile!.data!.records!.length ==
-                                      0
+                              sharedController.sharedRecords.length == 0
                                   ? Container(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 50),
@@ -365,21 +411,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                           physics:
                                               const NeverScrollableScrollPhysics(),
                                           children: List.generate(
-                                            profileController.profile!.data!
-                                                        .records!.length >
+                                            sharedController
+                                                        .sharedRecords.length >
                                                     3
                                                 ? 3
-                                                : profileController.profile!
-                                                    .data!.records!.length,
+                                                : sharedController
+                                                    .sharedRecords.length,
                                             (index) => RecordCard(
-                                              id: profileController.profile!
-                                                  .data!.records![index].id
+                                              id: sharedController
+                                                  .sharedRecords[index].data!.id
                                                   .toString(),
-                                              date: profileController.profile!
-                                                  .data!.records![index].date
+                                              date: sharedController
+                                                  .sharedRecords[index]
+                                                  .data!
+                                                  .date
                                                   .toString(),
-                                              title: profileController.profile!
-                                                  .data!.records![index].title
+                                              title: sharedController
+                                                  .sharedRecords[index]
+                                                  .data!
+                                                  .title
                                                   .toString(),
                                               color: Colors.white,
                                             ),
@@ -426,6 +476,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(
+                          height: 30,
+                        )
                       ],
                     ),
                   ),

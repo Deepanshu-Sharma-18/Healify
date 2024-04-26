@@ -1,22 +1,17 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:healify/models/file.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/models/user.dart';
-import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/ui/screens/record/controller/editpost.dart';
 import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/utils/colors.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:healify/utils/constants.dart';
 
 class EditRecord extends StatefulWidget {
   final String date;
@@ -43,6 +38,7 @@ class EditRecord extends StatefulWidget {
 
 class _EditRecordState extends State<EditRecord> {
   var profileController = Get.find<ProfileController>();
+  var loginController = Get.find<LoginController>();
 
   var post = Post();
   var prsignController = Presign();
@@ -73,6 +69,90 @@ class _EditRecordState extends State<EditRecord> {
     if (day.length == 1) day = "0$day";
 
     editPostController.date.value = DateTime.parse("$year-$month-$day");
+  }
+
+  Future<void> deleteRecord() async {
+    await Get.bottomSheet(Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      height: 250,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(
+            height: 20,
+          ),
+          MyText(
+              fontsize: 15,
+              fontcolor: ColorTheme.green,
+              fontweight: FontWeight.w500,
+              text: "Delete Record"),
+          const SizedBox(
+            height: 20,
+          ),
+          MyText(
+              fontsize: 15,
+              fontcolor: Colors.black,
+              fontweight: FontWeight.w500,
+              text: "Are you sure?"),
+          const SizedBox(
+            height: 20,
+          ),
+          OutlinedButton(
+            onPressed: () async {
+              Get.back();
+              Get.back();
+              Get.back();
+              await post.deleteRecord(widget.id);
+
+              await profileController.getProfile(
+                  loginController.accountNo.toString().toLowerCase());
+            },
+            style: ButtonStyle(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(ColorTheme.metamask),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              width: double.maxFinite,
+              height: 60,
+              alignment: Alignment.center,
+              child: MyText(
+                text: "Delete",
+                fontcolor: Colors.black,
+                fontsize: 17,
+                fontweight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Center(
+            child: InkWell(
+              onTap: () {
+                Get.back();
+              },
+              child: MyText(
+                  fontsize: 10,
+                  fontcolor: ColorTheme.green,
+                  fontweight: FontWeight.w500,
+                  text: "Cancel"),
+            ),
+          )
+        ],
+      ),
+    ));
   }
 
   Future<void> updateRecord() async {
@@ -133,12 +213,52 @@ class _EditRecordState extends State<EditRecord> {
                   const SizedBox(
                     height: 10,
                   ),
-                  MyText(
-                    fontsize: 30,
-                    fontcolor: Colors.black,
-                    fontweight: FontWeight.bold,
-                    text: "Edit Record",
-                  ),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        MyText(
+                          fontsize: 30,
+                          fontcolor: Colors.black,
+                          fontweight: FontWeight.bold,
+                          text: "Edit Record",
+                        ),
+                        const SizedBox(
+                          width: 60,
+                        ),
+                        Container(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              await deleteRecord();
+                            },
+                            style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsets>(
+                                  EdgeInsets.all(0)),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  ColorTheme.metamask),
+                              shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            child: Center(
+                              child: Container(
+                                width: 80,
+                                height: 15,
+                                alignment: Alignment.center,
+                                child: MyText(
+                                  text: "Delete",
+                                  fontcolor: Colors.black,
+                                  fontsize: 13,
+                                  fontweight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]),
                   const SizedBox(
                     height: 20,
                   ),

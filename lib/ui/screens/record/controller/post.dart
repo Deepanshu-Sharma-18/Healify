@@ -129,4 +129,36 @@ class Post {
       throw Exception("Failed to fetch data : ${response.body}");
     }
   }
+
+  Future<void> deleteRecord(String documentid) async {
+    final data = {"documentid": documentid};
+
+    var jsonString = jsonEncode(data);
+
+    var response = await http.post(Uri.parse("${ServerUrl}deleteRecord"),
+        body: jsonString);
+
+    if (response.statusCode == 200) {
+      Get.snackbar("Success", "Record deleted successfully");
+    } else {
+      Get.snackbar("Faliure", response.body.toString());
+      throw Exception("Failed  : ${response.body}");
+    }
+  }
+
+  Future<void> deleteProfile(String username) async {
+    final data = {"username": username};
+
+    var jsonString = jsonEncode(data);
+
+    var response =
+        await http.post(Uri.parse("${ServerUrl}deleteUser"), body: jsonString);
+
+    if (response.statusCode == 200) {
+      Get.snackbar("Success", "Profile deleted successfully");
+    } else {
+      Get.snackbar("Faliure", response.body.toString());
+      throw Exception("Failed : ${response.body}");
+    }
+  }
 }
