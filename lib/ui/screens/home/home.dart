@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     super.dispose();
-    loginController.w3mService!.disconnect();
   }
 
   var web3 = Web3Controller();
@@ -46,8 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> initWeb3() async {
     await web3.init();
-
-    print(loginController.accountNo);
 
     var data =
         await web3.getSharedRecordsFromBlockchain(loginController.accountNo);
@@ -57,8 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
         sharedController.sharedRecords.add(await post.getRecord(data[0][i]));
       }
     }
-
-    setState(() {});
   }
 
   @override

@@ -64,7 +64,7 @@ class _TimelineState extends State<Timeline> {
                   height: 10,
                 ),
                 MyText(
-                  fontsize: 30,
+                  fontsize: 25,
                   fontcolor: Colors.black,
                   fontweight: FontWeight.bold,
                   text: "Timeline",
@@ -113,8 +113,20 @@ class _TimelineState extends State<Timeline> {
                                     left: 5,
                                     child: Container(
                                       height: 150,
-                                      width: 5,
-                                      color: Colors.black,
+                                      width: 4,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(
+                                            index == 0 ||
+                                                    index ==
+                                                        profileController
+                                                            .profile
+                                                            .data!
+                                                            .records!
+                                                            .length
+                                                ? 10
+                                                : 0),
+                                      ),
                                     ),
                                   ),
                                   Positioned(

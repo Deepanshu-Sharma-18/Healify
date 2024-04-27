@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/models/user.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/components/textbox.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
@@ -214,47 +215,49 @@ class _EditRecordState extends State<EditRecord> {
                     height: 10,
                   ),
                   Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         MyText(
-                          fontsize: 30,
+                          fontsize: 25,
                           fontcolor: Colors.black,
                           fontweight: FontWeight.bold,
                           text: "Edit Record",
                         ),
-                        const SizedBox(
-                          width: 60,
-                        ),
-                        Container(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              await deleteRecord();
-                            },
-                            style: ButtonStyle(
-                              padding: MaterialStateProperty.all<EdgeInsets>(
-                                  EdgeInsets.all(0)),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  ColorTheme.metamask),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
+                        InkWell(
+                          onTap: () async {
+                            await deleteRecord();
+                          },
+                          child: Container(
+                            height: 45,
+                            width: 95,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: ColorTheme.grey),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 30,
+                                  width: 30,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50),
+                                      color: Colors.white),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.black,
+                                    size: 20,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            child: Center(
-                              child: Container(
-                                width: 80,
-                                height: 15,
-                                alignment: Alignment.center,
-                                child: MyText(
-                                  text: "Delete",
-                                  fontcolor: Colors.black,
-                                  fontsize: 13,
-                                  fontweight: FontWeight.bold,
+                                const SizedBox(
+                                  width: 5,
                                 ),
-                              ),
+                                MyText(
+                                    fontsize: 14,
+                                    fontcolor: ColorTheme.green,
+                                    fontweight: FontWeight.w600,
+                                    text: "Delete"),
+                              ],
                             ),
                           ),
                         ),
@@ -389,7 +392,7 @@ class _EditRecordState extends State<EditRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: symptoms,
                             hintText: "Enter Symptom",
                             labelText: "Symptom"),
@@ -484,7 +487,7 @@ class _EditRecordState extends State<EditRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: diagnosis,
                             hintText: "Enter Diagnosis",
                             labelText: "Diagnosis"),
@@ -579,7 +582,7 @@ class _EditRecordState extends State<EditRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: treatment,
                             hintText: "Enter Treatment",
                             labelText: "Treatment"),
@@ -647,7 +650,7 @@ class _EditRecordState extends State<EditRecord> {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 60,
                   ),
                 ],
               ),

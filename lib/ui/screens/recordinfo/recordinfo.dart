@@ -1,22 +1,25 @@
+import 'dart:async';
 import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:healify/models/user.dart';
 import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/components/bulletpoint.dart';
-import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
+import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/ui/screens/record/editrecord.dart';
 import 'package:healify/ui/screens/recordinfo/sharedcontroller.dart';
+import 'package:healify/ui/screens/sharedrecords/sharedcontroller.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:photo_view/photo_view.dart';
 
 class RecordInfo extends StatefulWidget {
   const RecordInfo(
@@ -42,12 +45,16 @@ class RecordInfo extends StatefulWidget {
 }
 
 class _RecordInfoState extends State<RecordInfo> {
+  var web3 = Web3Controller();
+  var post = Post();
   List<String> files = [];
-  var sharedController = SharedRecordsController();
   var presignController = Presign();
   var profileController = Get.find<ProfileController>();
   var share = TextEditingController();
+  var sharedController = SharedRecordsController();
+  var shareController = SharedController();
   var web3controller = Get.find<Web3Controller>();
+  var loginController = Get.find<LoginController>();
 
   @override
   void initState() {
@@ -93,8 +100,6 @@ class _RecordInfoState extends State<RecordInfo> {
     setState(() {
       files = urls;
     });
-
-    print(files);
   }
 
   @override
@@ -118,7 +123,7 @@ class _RecordInfoState extends State<RecordInfo> {
                   height: 10,
                 ),
                 MyText(
-                  fontsize: 30,
+                  fontsize: 25,
                   fontcolor: Colors.black,
                   fontweight: FontWeight.bold,
                   text: "Manage Records",
@@ -146,7 +151,7 @@ class _RecordInfoState extends State<RecordInfo> {
                             width: 5,
                           ),
                           MyText(
-                            fontsize: 25,
+                            fontsize: 20,
                             fontcolor: Colors.black,
                             fontweight: FontWeight.bold,
                             text: widget.title,
@@ -171,15 +176,38 @@ class _RecordInfoState extends State<RecordInfo> {
                             },
                             child: Container(
                               height: 45,
-                              width: 45,
+                              width: 85,
                               decoration: BoxDecoration(
-                                color: ColorTheme.green,
-                                borderRadius: BorderRadius.circular(20),
+                                color: ColorTheme.grey,
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              child: Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 20,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(50)),
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Colors.black,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  MyText(
+                                    fontsize: 16,
+                                    fontcolor: ColorTheme.green,
+                                    fontweight: FontWeight.w600,
+                                    text: "Edit",
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -210,7 +238,7 @@ class _RecordInfoState extends State<RecordInfo> {
                                       ),
                                       MyText(
                                         fontsize: 20,
-                                        fontcolor: ColorTheme.metamask,
+                                        fontcolor: Colors.black,
                                         fontweight: FontWeight.bold,
                                         text: "Share Record",
                                       ),
@@ -218,8 +246,8 @@ class _RecordInfoState extends State<RecordInfo> {
                                         height: 20,
                                       ),
                                       MyText(
-                                        fontsize: 15,
-                                        fontcolor: ColorTheme.green,
+                                        fontsize: 17,
+                                        fontcolor: Colors.black,
                                         fontweight: FontWeight.bold,
                                         text: "Share with",
                                       ),
@@ -236,7 +264,6 @@ class _RecordInfoState extends State<RecordInfo> {
                                       ),
                                       OutlinedButton(
                                         onPressed: () async {
-                                          share.clear();
                                           Get.back();
 
                                           await web3controller
@@ -244,7 +271,8 @@ class _RecordInfoState extends State<RecordInfo> {
                                                   profileController
                                                       .profile!.data!.authId!,
                                                   widget.id,
-                                                  "0x5F1Ea3acAa2C70a936E2066AC285eB0e30D22e9c");
+                                                  share.text);
+                                          share.clear();
                                         },
                                         style: ButtonStyle(
                                           backgroundColor:
@@ -275,21 +303,38 @@ class _RecordInfoState extends State<RecordInfo> {
                                       const SizedBox(
                                         height: 20,
                                       ),
-                                      MyText(
-                                        fontsize: 15,
-                                        fontcolor: ColorTheme.green,
-                                        fontweight: FontWeight.bold,
-                                        text: "Shared with",
+                                      Row(
+                                        children: [
+                                          MyText(
+                                            fontsize: 17,
+                                            fontcolor: Colors.black,
+                                            fontweight: FontWeight.bold,
+                                            text: "Records Shared with Users",
+                                          ),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                          MyText(
+                                            fontsize: 13,
+                                            fontcolor: Colors.black,
+                                            fontweight: FontWeight.bold,
+                                            text:
+                                                "(${sharedController.sharedWith.length})",
+                                          ),
+                                        ],
                                       ),
                                       Obx(
-                                        () => ListView(
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          children: List.generate(
-                                              sharedController
-                                                  .sharedWith.length,
-                                              (index) => Container(
+                                        () => sharedController
+                                                    .sharedWith.length >
+                                                0
+                                            ? ListView(
+                                                shrinkWrap: true,
+                                                physics:
+                                                    const AlwaysScrollableScrollPhysics(),
+                                                children: List.generate(
+                                                  sharedController
+                                                      .sharedWith.length,
+                                                  (index) => Container(
                                                     margin:
                                                         EdgeInsets.symmetric(
                                                             vertical: 4),
@@ -336,6 +381,29 @@ class _RecordInfoState extends State<RecordInfo> {
                                                                     sharedController
                                                                             .sharedWith[
                                                                         index]);
+
+                                                            var data = await web3
+                                                                .getSharedRecordsFromBlockchain(
+                                                                    loginController
+                                                                        .accountNo);
+
+                                                            for (var i = 0;
+                                                                i <
+                                                                    data[0]
+                                                                        .length;
+                                                                i++) {
+                                                              if (data[0][i] !=
+                                                                      null &&
+                                                                  data[0][i] !=
+                                                                      "") {
+                                                                shareController
+                                                                    .sharedRecords
+                                                                    .add(await post
+                                                                        .getRecord(data[0]
+                                                                            [
+                                                                            i]));
+                                                              }
+                                                            }
                                                           },
                                                           child: Container(
                                                             height: 25,
@@ -359,8 +427,26 @@ class _RecordInfoState extends State<RecordInfo> {
                                                         ),
                                                       ],
                                                     ),
-                                                  )),
-                                        ),
+                                                  ),
+                                                ))
+                                            : Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(
+                                                    height: 30,
+                                                  ),
+                                                  MyText(
+                                                      fontsize: 15,
+                                                      fontcolor:
+                                                          ColorTheme.darkgrey,
+                                                      fontweight:
+                                                          FontWeight.w500,
+                                                      text: "No users found"),
+                                                ],
+                                              ),
                                       ),
                                     ],
                                   ),
@@ -369,15 +455,36 @@ class _RecordInfoState extends State<RecordInfo> {
                             },
                             child: Container(
                               height: 45,
-                              width: 45,
+                              width: 95,
                               decoration: BoxDecoration(
-                                color: ColorTheme.green,
-                                borderRadius: BorderRadius.circular(20),
+                                color: ColorTheme.grey,
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              child: Icon(
-                                Icons.share,
-                                color: Colors.white,
-                                size: 20,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(50),
+                                        color: Colors.white),
+                                    child: Icon(
+                                      Icons.share,
+                                      color: Colors.black,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  MyText(
+                                      fontsize: 16,
+                                      fontcolor: ColorTheme.green,
+                                      fontweight: FontWeight.w600,
+                                      text: "Share"),
+                                ],
                               ),
                             ),
                           ),
@@ -493,9 +600,6 @@ class _RecordInfoState extends State<RecordInfo> {
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
                     ],
                   ),
                 ),
@@ -506,7 +610,7 @@ class _RecordInfoState extends State<RecordInfo> {
                   padding: const EdgeInsets.all(15),
                   width: double.maxFinite,
                   decoration: BoxDecoration(
-                    color: ColorTheme.green,
+                    color: ColorTheme.darkgrey,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -567,29 +671,155 @@ class _RecordInfoState extends State<RecordInfo> {
                 ),
                 Container(
                   height: 200,
-                  child: GridView.count(
-                    padding: const EdgeInsets.all(5),
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.5 / 1.5,
-                    physics: NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    children: [
-                      if (files != null)
-                        for (var i in files)
-                          i.toString().contains("image")
-                              ? CachedNetworkImage(
-                                  imageUrl: i,
-                                  placeholder: (context, url) =>
-                                      CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                )
-                              : PDFView(
-                                  filePath: i.toString(),
-                                )
-                    ],
-                  ),
+                  child: files.length > 0
+                      ? GridView.count(
+                          padding: const EdgeInsets.all(5),
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 4.5 / 1.5,
+                          physics: NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          children: [
+                            if (widget.reports != null)
+                              for (var f = 0; f < widget.reports!.length; f++)
+                                InkWell(
+                                  onTap: () async {
+                                    final Completer<PDFViewController>
+                                        _controller =
+                                        Completer<PDFViewController>();
+                                    int? pages = 0;
+                                    int? currentPage = 0;
+                                    bool isReady = false;
+                                    String errorMessage = '';
+                                    await Get.bottomSheet(
+                                      isScrollControlled: true,
+                                      isDismissible: false,
+                                      Container(
+                                        height:
+                                            MediaQuery.of(context).size.height,
+                                        decoration: BoxDecoration(
+                                            color: Colors.transparent),
+                                        child: files[f]
+                                                .toString()
+                                                .contains("image")
+                                            ? PhotoView(
+                                                imageProvider:
+                                                    NetworkImage(files[f]),
+                                              )
+                                            : PDFView(
+                                                filePath: files[f],
+                                                enableSwipe: true,
+                                                swipeHorizontal: true,
+                                                autoSpacing: false,
+                                                pageFling: true,
+                                                pageSnap: true,
+                                                defaultPage: currentPage!,
+                                                fitPolicy: FitPolicy.BOTH,
+                                                preventLinkNavigation:
+                                                    false, // if set to true the link is handled in flutter
+                                                onRender: (_pages) {
+                                                  setState(() {
+                                                    pages = _pages;
+                                                    isReady = true;
+                                                  });
+                                                },
+                                                onError: (error) {
+                                                  setState(() {
+                                                    errorMessage =
+                                                        error.toString();
+                                                  });
+                                                },
+                                                onPageError: (page, error) {
+                                                  setState(() {
+                                                    errorMessage =
+                                                        '$page: ${error.toString()}';
+                                                  });
+                                                },
+                                                onViewCreated:
+                                                    (PDFViewController
+                                                        pdfViewController) {
+                                                  _controller.complete(
+                                                      pdfViewController);
+                                                },
+                                                onLinkHandler: (String? uri) {},
+                                                onPageChanged:
+                                                    (int? page, int? total) {
+                                                  setState(() {
+                                                    currentPage = page;
+                                                  });
+                                                },
+                                              ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.black, width: 0.8),
+                                      color: ColorTheme.grey,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          widget.reports![f].content!
+                                                      .split("/")
+                                                      .last ==
+                                                  "pdf"
+                                              ? Icons.picture_as_pdf
+                                              : Icons.image,
+                                          color: Colors.red,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(
+                                          width: 3,
+                                        ),
+                                        Container(
+                                          width: 100,
+                                          child: Text(
+                                            widget.reports![f].objectKey!
+                                                .split(".")
+                                                .first,
+                                            style: GoogleFonts.dmSans(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                          ],
+                        )
+                      : widget.reports!.length > 0
+                          ? Center(
+                              child: Container(
+                                child: MyText(
+                                  fontsize: 15,
+                                  fontcolor: Colors.black,
+                                  fontweight: FontWeight.w600,
+                                  text: "Loading...",
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Container(
+                                child: MyText(
+                                  fontsize: 15,
+                                  fontcolor: Colors.black,
+                                  fontweight: FontWeight.w600,
+                                  text: "No records found",
+                                ),
+                              ),
+                            ),
                 ),
                 const SizedBox(
                   height: 50,

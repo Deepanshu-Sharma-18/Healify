@@ -33,16 +33,17 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         color: ColorTheme.green,
         child: AnimatedSplashScreen(
-            duration: 1500,
-            backgroundColor: ColorTheme.green,
-            splash: Center(
-                child: MyText(
-              fontcolor: Colors.black,
-              fontsize: 30,
-              text: 'Healify',
-              fontweight: FontWeight.bold,
-            )),
-            nextScreen: findNextScreen()),
+          duration: 1500,
+          backgroundColor: ColorTheme.green,
+          splash: Center(
+              child: MyText(
+            fontcolor: Colors.black,
+            fontsize: 30,
+            text: 'Healify',
+            fontweight: FontWeight.bold,
+          )),
+          nextScreen: findNextScreen(),
+        ),
       ),
     );
   }

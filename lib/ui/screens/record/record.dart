@@ -20,19 +20,22 @@ class _RecordScreenState extends State<RecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: ColorTheme.green,
-        onPressed: () {
-          Get.to(() => AddRecord());
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: ColorTheme.green,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
+      floatingActionButton: Container(
+        padding: EdgeInsets.only(left: 10, bottom: 10),
+        child: FloatingActionButton(
+          backgroundColor: ColorTheme.green,
+          onPressed: () {
+            Get.to(() => AddRecord());
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: ColorTheme.green,
+              borderRadius: BorderRadius.circular(0),
+            ),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
@@ -55,7 +58,7 @@ class _RecordScreenState extends State<RecordScreen> {
                   height: 10,
                 ),
                 MyText(
-                  fontsize: 30,
+                  fontsize: 25,
                   fontcolor: Colors.black,
                   fontweight: FontWeight.bold,
                   text: "Manage Records",

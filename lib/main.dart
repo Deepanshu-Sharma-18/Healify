@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
+import 'package:healify/env/env.dart';
 import 'package:healify/firebase_options.dart';
 import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/screens/auth/auth.dart';
@@ -13,6 +15,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  Gemini.init(apiKey: Env.apikey);
   runApp(const MyApp());
 }
 

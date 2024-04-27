@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/screens/home/home.dart';
 import 'package:healify/ui/screens/loader/data.dart';
 import 'package:healify/ui/screens/profile/CreateProfile.dart';

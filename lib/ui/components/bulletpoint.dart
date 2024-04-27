@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:healify/main.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/utils/colors.dart';
 
 class BulletText extends StatelessWidget {
   final String text;
@@ -18,7 +18,7 @@ class BulletText extends StatelessWidget {
             height: 6,
             width: 6,
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: ColorTheme.green,
               shape: BoxShape.circle,
             ),
           ),

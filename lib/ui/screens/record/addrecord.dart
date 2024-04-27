@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:healify/models/file.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/ui/components/showfile.dart';
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/components/textbox.dart';
 import 'package:healify/ui/components/textfield.dart';
 import 'package:healify/ui/components/topbar.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
@@ -101,7 +101,7 @@ class _AddRecordState extends State<AddRecord> {
                     height: 10,
                   ),
                   MyText(
-                    fontsize: 30,
+                    fontsize: 25,
                     fontcolor: Colors.black,
                     fontweight: FontWeight.bold,
                     text: "Add Record",
@@ -236,7 +236,7 @@ class _AddRecordState extends State<AddRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: symptoms,
                             hintText: "Enter Symptom",
                             labelText: "Symptom"),
@@ -331,7 +331,7 @@ class _AddRecordState extends State<AddRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: diagnosis,
                             hintText: "Enter Diagnosis",
                             labelText: "Diagnosis"),
@@ -426,7 +426,7 @@ class _AddRecordState extends State<AddRecord> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: MyTextfield(
+                        child: MyTextBox(
                             controller: treatment,
                             hintText: "Enter Treatment",
                             labelText: "Treatment"),
@@ -455,7 +455,7 @@ class _AddRecordState extends State<AddRecord> {
                     ],
                   ),
                   const SizedBox(
-                    height: 20,
+                    height: 30,
                   ),
                   Row(
                     children: [
@@ -566,7 +566,7 @@ class _AddRecordState extends State<AddRecord> {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 60,
                   ),
                 ],
               ),

@@ -40,7 +40,7 @@ class _SharedRecordState extends State<SharedRecord> {
               height: 10,
             ),
             MyText(
-              fontsize: 30,
+              fontsize: 25,
               fontcolor: Colors.black,
               fontweight: FontWeight.bold,
               text: "Shared Records",
@@ -48,21 +48,38 @@ class _SharedRecordState extends State<SharedRecord> {
             const SizedBox(
               height: 20,
             ),
-            ListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: List.generate(
-                sharedController.sharedRecords.length,
-                (index) => RecordCard(
-                  id: sharedController.sharedRecords[index].data!.id.toString(),
-                  date: sharedController.sharedRecords[index].data!.date
-                      .toString(),
-                  title: sharedController.sharedRecords[index].data!.title
-                      .toString(),
-                  color: ColorTheme.grey,
-                ),
-              ),
-            ),
+            sharedController.sharedRecords.length > 0
+                ? ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: List.generate(
+                      sharedController.sharedRecords.length,
+                      (index) => RecordCard(
+                        id: sharedController.sharedRecords[index].data!.id
+                            .toString(),
+                        date: sharedController.sharedRecords[index].data!.date
+                            .toString(),
+                        title: sharedController.sharedRecords[index].data!.title
+                            .toString(),
+                        color: ColorTheme.grey,
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      const SizedBox(
+                        height: 100,
+                      ),
+                      Center(
+                        child: MyText(
+                          fontsize: 15,
+                          fontcolor: Colors.black,
+                          fontweight: FontWeight.w500,
+                          text: "No Records Found",
+                        ),
+                      ),
+                    ],
+                  )
           ],
         ),
       )),
