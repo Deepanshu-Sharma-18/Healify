@@ -2,17 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:healify/env/env.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'package:healify/utils/constants.dart';
 
 class Presign {
   Future<PresignModel> getUploadPresignedUrl(
       String username, String objectKey) async {
     var data = {
       "username": username,
-      "bucketname": bucketName,
+      "bucketname": Env.BucketName,
       "objectkey": objectKey,
       "content": getContentType(objectKey)
     };
@@ -20,7 +19,7 @@ class Presign {
     var jsonString = jsonEncode(data);
 
     var response = await http.post(
-        Uri.parse(ServerUrl + "generateUploadPresignedUrl"),
+        Uri.parse(Env.ServerUrl + "generateUploadPresignedUrl"),
         body: jsonString);
 
     if (response.statusCode == 200) {
@@ -35,7 +34,7 @@ class Presign {
       String username, String objectKey) async {
     var data = {
       "username": username,
-      "bucketname": bucketName,
+      "bucketname": Env.BucketName,
       "objectkey": objectKey,
       "content": getContentType(objectKey)
     };
@@ -43,7 +42,7 @@ class Presign {
     var jsonString = jsonEncode(data);
 
     var response = await http.post(
-        Uri.parse(ServerUrl + "generateDownloadPresignedUrl"),
+        Uri.parse(Env.ServerUrl + "generateDownloadPresignedUrl"),
         body: jsonString);
 
     if (response.statusCode == 200) {

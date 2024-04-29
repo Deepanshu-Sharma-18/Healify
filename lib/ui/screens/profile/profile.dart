@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:healify/env/env.dart';
 import 'package:healify/models/user.dart';
-import 'package:healify/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
@@ -21,7 +21,7 @@ class ProfileController extends GetxController {
     var data = {"authid": authID};
     var jsonString = jsonEncode(data);
     var response =
-        await http.post(Uri.parse("${ServerUrl}getUser"), body: jsonString);
+        await http.post(Uri.parse("${Env.ServerUrl}getUser"), body: jsonString);
 
     if (response.statusCode == 200) {
       _profile.value = userModelFromMap(response.body);
@@ -57,8 +57,8 @@ class ProfileController extends GetxController {
     };
 
     var jsonString = jsonEncode(data);
-    var response =
-        await http.post(Uri.parse("${ServerUrl}saveUser"), body: jsonString);
+    var response = await http.post(Uri.parse("${Env.ServerUrl}saveUser"),
+        body: jsonString);
 
     if (response.statusCode == 200) {
       Get.snackbar("Success", "Profile Saved Successfullly");
@@ -102,8 +102,8 @@ class ProfileController extends GetxController {
     };
 
     var jsonString = jsonEncode(data);
-    var response =
-        await http.post(Uri.parse("${ServerUrl}saveUser"), body: jsonString);
+    var response = await http.post(Uri.parse("${Env.ServerUrl}saveUser"),
+        body: jsonString);
 
     if (response.statusCode == 200) {
       Get.snackbar("Success", "Profile Saved Successfullly");

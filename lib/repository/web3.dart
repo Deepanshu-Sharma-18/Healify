@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:healify/ui/screens/metamask/LoginController.dart';
-import 'package:healify/utils/constants.dart';
+import 'package:healify/env/env.dart';
 import 'package:http/http.dart' as http;
 import 'package:web3dart/web3dart.dart';
 
@@ -15,14 +13,14 @@ class Web3Controller extends GetxController {
   late ContractFunction getsharedRecords;
   late ContractFunction grantAccess;
   late ContractFunction revokeAccess;
-  final String rpcUrl = RpcUrl;
-  final String socketUrl = SocketUrl;
+  final String rpcUrl = Env.RpcUrl;
+  final String socketUrl = Env.SocketUrl;
   late Web3Client web3client;
 
   late ContractAbi _abiCode;
-  Credentials _cred = PrivateKey;
+  Credentials _cred = EthPrivateKey.fromHex(Env.PrivateKey);
   late DeployedContract _deployedContract;
-  EthPrivateKey _privateKey = PrivateKey;
+  EthPrivateKey _privateKey = EthPrivateKey.fromHex(Env.PrivateKey);
 
   init() async {
     String abiFile = await rootBundle.loadString('assets/HealthRecords.json');
@@ -37,8 +35,8 @@ class Web3Controller extends GetxController {
       http.Client(),
     );
 
-    _deployedContract =
-        DeployedContract(_abiCode, EthereumAddress.fromHex(contractAddress));
+    _deployedContract = DeployedContract(
+        _abiCode, EthereumAddress.fromHex(Env.ContractAddress));
 
     addPatient = _deployedContract.function('addPatient');
     addRecord = _deployedContract.function('addRecord');

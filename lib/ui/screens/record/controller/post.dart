@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:healify/env/env.dart';
 import 'package:healify/models/file.dart';
 import 'package:healify/models/record.dart';
 import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
-import 'package:healify/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 class Post {
@@ -41,8 +41,8 @@ class Post {
     };
 
     var jsonString = jsonEncode(data);
-    var response =
-        await http.post(Uri.parse("${ServerUrl}saveRecord"), body: jsonString);
+    var response = await http.post(Uri.parse("${Env.ServerUrl}saveRecord"),
+        body: jsonString);
 
     if (response.statusCode == 200) {
       Get.snackbar("Success", "Profile Saved Successfullly");
@@ -95,7 +95,7 @@ class Post {
     };
 
     var jsonString = jsonEncode(data);
-    var response = await http.post(Uri.parse("${ServerUrl}updateRecord"),
+    var response = await http.post(Uri.parse("${Env.ServerUrl}updateRecord"),
         body: jsonString);
 
     if (response.statusCode == 200) {
@@ -117,8 +117,8 @@ class Post {
 
     var jsonString = jsonEncode(data);
 
-    var response =
-        await http.post(Uri.parse("${ServerUrl}getRecord"), body: jsonString);
+    var response = await http.post(Uri.parse("${Env.ServerUrl}getRecord"),
+        body: jsonString);
 
     if (response.statusCode == 200) {
       return recordModelFromMap(response.body);
@@ -133,7 +133,7 @@ class Post {
 
     var jsonString = jsonEncode(data);
 
-    var response = await http.post(Uri.parse("${ServerUrl}deleteRecord"),
+    var response = await http.post(Uri.parse("${Env.ServerUrl}deleteRecord"),
         body: jsonString);
 
     if (response.statusCode == 200) {
@@ -149,8 +149,8 @@ class Post {
 
     var jsonString = jsonEncode(data);
 
-    var response =
-        await http.post(Uri.parse("${ServerUrl}deleteUser"), body: jsonString);
+    var response = await http.post(Uri.parse("${Env.ServerUrl}deleteUser"),
+        body: jsonString);
 
     if (response.statusCode == 200) {
       Get.snackbar("Success", "Profile deleted successfully");

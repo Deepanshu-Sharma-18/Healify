@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healify/env/env.dart';
 import 'package:healify/models/file.dart';
 import 'package:healify/models/responsepresign.dart';
 import 'package:healify/ui/components/showfile.dart';
@@ -15,7 +16,6 @@ import 'package:healify/ui/screens/record/controller/post.dart';
 import 'package:healify/ui/screens/record/controller/presign.dart';
 import 'package:healify/utils/colors.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:healify/utils/constants.dart';
 
 class AddRecord extends StatefulWidget {
   const AddRecord({super.key});
@@ -56,7 +56,7 @@ class _AddRecordState extends State<AddRecord> {
               await prsignController.uploadFileToS3(response.url!, element);
 
               addPostController.filesToUpload.add(FileModel(
-                bucketName: bucketName,
+                bucketName: Env.BucketName,
                 objectKey: element.path.split("/").last,
                 content: prsignController
                     .getContentType(element.path.split("/").last),

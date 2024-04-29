@@ -50,8 +50,6 @@ app.*.map.json
 /backend/go.sum
 /backend/.env
 
-/lib/utils/constants.dart
 
-
-/lib/.env
+.env
 /lib/env
