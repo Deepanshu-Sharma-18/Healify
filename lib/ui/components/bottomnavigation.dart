@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/repository/bottomnav.dart';
+import 'package:healify/ui/screens/profile/editProfile.dart';
+import 'package:healify/ui/screens/profile/profileScreen.dart';
 import 'package:healify/utils/colors.dart';
 
 class BottomNav extends StatefulWidget {
@@ -95,6 +97,7 @@ class _BottomNavState extends State<BottomNav> {
               onTap: () {
                 if (bottomNavController.active != 3) {
                   bottomNavController.updateActive(3);
+                  Get.off(() => ProfileScreen());
                 }
               },
               child: Container(

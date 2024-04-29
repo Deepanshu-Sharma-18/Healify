@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:healify/models/file.dart';
 import 'package:healify/models/record.dart';
-import 'package:healify/models/user.dart';
 import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/utils/constants.dart';
@@ -14,6 +11,7 @@ import 'package:http/http.dart' as http;
 class Post {
   final web3controller = Get.find<Web3Controller>();
   final profileController = Get.find<ProfileController>();
+
   Future<void> saveReport(
       String title,
       String date,
