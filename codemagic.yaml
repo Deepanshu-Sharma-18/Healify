@@ -20,16 +20,16 @@ workflows:
 
     scripts:
       - name: Set up local.properties
-      script: | 
-        echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-    - name: Get Flutter packages
-      script: | 
-        flutter packages pub get
-    - name: Build AAB with Flutter
-      script: | 
-        flutter build apk --release
-    - name: Publish to Github
-      script: | 
+        script: | 
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: | 
+          flutter packages pub get
+      - name: Build AAB with Flutter
+        script: | 
+          flutter build apk --release
+      - name: Publish to Github
+        script: | 
          if [ -z ${CM_TAG} ]; then
            echo "Not a tag build, will not publish GitHub release"
            exit 0
