@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment                 # Type of Kubernetes resource
+metadata:
+  name: go-healify        # Name of the Kubernetes resource
+spec:
+  replicas: 3                  # Number of pods to run at any given time
+  selector:
+    matchLabels:
+      app: go-healify        # This deployment applies to any Pods matching the specified label
+  template:                      # This deployment will create a set of pods using the configurations in this template
+    metadata:
+      labels:                    # The labels that will be applied to all of the pods in this deployment
+        app: go-healify
+    spec:                        # Spec for the container which will run in the Pod
+      containers:
+      - name: go-healify
+        image: deepshx/healify:v4
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 3000  # Should match the port number that the Go application listens on
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
