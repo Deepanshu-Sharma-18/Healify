@@ -1,13 +1,14 @@
 apiVersion: apps/v1
-kind: Deployment                 # Type of Kubernetes resource
+kind: Deployment                 
 metadata:
-  name: go-healify        # Name of the Kubernetes resource
+  namespace: healify
+  name: go-healify        
 spec:
-  replicas: 3                  # Number of pods to run at any given time
+  replicas: 3                  
   selector:
     matchLabels:
-      app: go-healify        # This deployment applies to any Pods matching the specified label
-  template:                      # This deployment will create a set of pods using the configurations in this template
+      app: go-healify        
+  template:                      
     metadata:
       labels:                    # The labels that will be applied to all of the pods in this deployment
         app: go-healify
