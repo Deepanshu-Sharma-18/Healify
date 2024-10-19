@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healify/ui/components/bottomnavigation.dart';
+
 import 'package:healify/ui/components/text.dart';
+import 'package:healify/ui/screens/auth/auth.dart';
+import 'package:healify/ui/screens/auth/signin.dart';
+import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/editProfile.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
 import 'package:healify/utils/colors.dart';
@@ -15,10 +18,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   var profileController = Get.find<ProfileController>();
+  var loginController = Get.find<LoginController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNav(),
       body: SafeArea(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -73,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           MyText(
                             fontsize: 16,
-                            fontcolor: ColorTheme.green,
+                            fontcolor: Colors.black,
                             fontweight: FontWeight.w600,
                             text: "Edit",
                           ),
@@ -246,7 +249,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(
-                height: 20,
+                height: 30,
+              ),
+              GestureDetector(
+                onTap: () async {
+                  await AuthController().auth.signOut();
+                  Get.offAll(() => SignIn());
+                },
+                child: Container(
+                  height: 60,
+                  width: double.maxFinite,
+                  decoration: BoxDecoration(
+                    color: ColorTheme.grey,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Center(
+                    child: MyText(
+                      fontsize: 15,
+                      fontcolor: Colors.black,
+                      fontweight: FontWeight.w600,
+                      text: "Log Out",
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 25,
               ),
             ],
           ),

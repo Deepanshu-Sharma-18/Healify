@@ -53,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 fontsize: 25,
                 fontcolor: Colors.black,
                 fontweight: FontWeight.bold,
-                text: "ChatGpt",
+                text: "AI Chat",
               ),
               const SizedBox(
                 height: 30,

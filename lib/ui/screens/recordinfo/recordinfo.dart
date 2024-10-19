@@ -203,7 +203,7 @@ class _RecordInfoState extends State<RecordInfo> {
                                   ),
                                   MyText(
                                     fontsize: 16,
-                                    fontcolor: ColorTheme.green,
+                                    fontcolor: Colors.black,
                                     fontweight: FontWeight.w600,
                                     text: "Edit",
                                   ),
@@ -481,7 +481,7 @@ class _RecordInfoState extends State<RecordInfo> {
                                   ),
                                   MyText(
                                       fontsize: 16,
-                                      fontcolor: ColorTheme.green,
+                                      fontcolor: Colors.black,
                                       fontweight: FontWeight.w600,
                                       text: "Share"),
                                 ],
@@ -610,7 +610,7 @@ class _RecordInfoState extends State<RecordInfo> {
                   padding: const EdgeInsets.all(15),
                   width: double.maxFinite,
                   decoration: BoxDecoration(
-                    color: ColorTheme.darkgrey,
+                    color: ColorTheme.grey,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(

@@ -154,9 +154,9 @@ class _SignInState extends State<SignIn> {
                     height: 20,
                   ),
                   OutlinedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (email.text.isNotEmpty && password.text.isNotEmpty) {
-                        authController.signIn(email.text, password.text);
+                        await authController.signIn(email.text, password.text);
                         if (FirebaseAuth.instance.currentUser != null) {
                           Get.off(() => LoginMetamask());
                         }

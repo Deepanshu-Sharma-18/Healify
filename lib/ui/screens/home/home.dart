@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healify/repository/bottomnav.dart';
 import 'package:healify/repository/web3.dart';
-import 'package:healify/ui/components/bottomnavigation.dart';
 import 'package:healify/ui/components/recordcard.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/components/topbar.dart';
@@ -59,7 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNav(),
       body: SafeArea(
         child: Obx(
           () => Container(

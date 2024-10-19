@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:healify/ui/components/text.dart';
 import 'package:healify/ui/screens/metamask/LoginController.dart';
 import 'package:healify/ui/screens/profile/profile.dart';
+import 'package:healify/ui/screens/profile/profileScreen.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 class TopBar extends StatelessWidget {
@@ -23,18 +24,21 @@ class TopBar extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: NetworkImage(profileController.isProfileNull
-                            ? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                            : profileController.profile!.data!.image!),
+                  GestureDetector(
+                    onTap: () => Get.to(ProfileScreen()),
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(profileController.isProfileNull
+                              ? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                              : profileController.profile!.data!.image!),
+                        ),
+                        color: Colors.grey,
                       ),
-                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(
