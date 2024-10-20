@@ -16,7 +16,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  Gemini.init(apiKey: Env.Apikey);
+  Gemini.init(apiKey: Env.GptKey);
   runApp(const MyApp());
 }
 

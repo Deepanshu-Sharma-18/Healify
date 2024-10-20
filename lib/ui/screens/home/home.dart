@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healify/repository/bottomnav.dart';
 import 'package:healify/repository/web3.dart';
 import 'package:healify/ui/components/recordcard.dart';
 import 'package:healify/ui/components/text.dart';
@@ -26,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   var loginController = Get.find<LoginController>();
   var profileController = Get.find<ProfileController>();
   var sharedController = Get.put(SharedController());
-  var bottomNavController = Get.put(BottomNavController());
 
   @override
   void initState() {

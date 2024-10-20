@@ -61,6 +61,7 @@ func SaveRecord(c *gin.Context) {
 	}
 
 	result, _ := json.MarshalIndent(createdRecord, "", "  ")
+	c.JSON(http.StatusOK, gin.H{"id": createdRecord.ID})
 	fmt.Printf("created record: %s\n", result)
 
 }
