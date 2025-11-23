@@ -9,7 +9,7 @@ const URL = process.env.URL
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 module.exports = {
-  solidity: "0.8.0",
+  solidity: "0.8.19",
   networks: {
     sepolia : {
       url: URL,

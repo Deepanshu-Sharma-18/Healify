@@ -3,7 +3,7 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
 
 const TokenModule = buildModule("TokenModule", (m) => {
-  const token = m.contract("HealthRecords");
+  const token = m.contract("HealifyHealthRecords");
 
   return { token };
 });
